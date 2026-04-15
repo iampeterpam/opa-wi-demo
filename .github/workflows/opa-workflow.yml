@@ -69,7 +69,7 @@ jobs:
         run: |
           echo "Authenticating with OPA using Workload Connection: github-actions-prod"
           OPA_TOKEN=$(sft workload authenticate \
-            --team farley \
+            --team pfarley \
             --connection github-actions-prod \
             --jwt-env GITHUB_OIDC_TOKEN)
           echo "::add-mask::$OPA_TOKEN"

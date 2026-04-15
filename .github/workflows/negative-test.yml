@@ -51,7 +51,7 @@ jobs:
           echo "Expected: OPA rejects this token — Workload Role requires refs/heads/main"
           echo ""
           sft workload authenticate \
-            --team farley \
+            --team pfarley \
             --connection github-actions-prod \
             --jwt-env GITHUB_OIDC_TOKEN || {
             echo "❌ Authentication rejected by OPA — as expected."
