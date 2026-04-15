@@ -85,46 +85,44 @@ jobs:
 
           echo "Opening brokered SSH session to target-server-01..."
 
-          sft ssh target-server-01 \
-            bash -c "
-              PAYLOAD=\$(cat <<'JSON'
+          # Build payload locally and base64-encode to avoid quoting issues across the SSH boundary
+          PAYLOAD_B64=$(cat <<JSON | base64 -w0
           {
-            \"customer\": \"${{ github.event.inputs.customer_name }}\",
-            \"status\": \"success\",
-            \"last_deploy\": \"${TIMESTAMP}\",
-            \"deployed_by\": \"wl_github_actions (OPA Workload Identity)\",
-            \"session_duration_seconds\": null,
-            \"standing_credentials_used\": 0,
-            \"deployment_count\": 1,
-            \"opa_connection\": \"github-actions-prod\",
-            \"git_repo\": \"${{ github.repository }}\",
-            \"git_branch\": \"${{ github.ref_name }}\",
-            \"git_commit\": \"${{ github.sha }}\"
+            "customer": "${{ github.event.inputs.customer_name }}",
+            "status": "success",
+            "last_deploy": "${TIMESTAMP}",
+            "deployed_by": "wl_github_actions (OPA Workload Identity)",
+            "session_duration_seconds": null,
+            "standing_credentials_used": 0,
+            "deployment_count": 1,
+            "opa_connection": "github-actions-prod",
+            "git_repo": "${{ github.repository }}",
+            "git_branch": "${{ github.ref_name }}",
+            "git_commit": "${{ github.sha }}"
           }
           JSON
           )
-              echo \"\$PAYLOAD\" | sudo tee /var/www/demo-app/state.json > /dev/null
-              echo 'state.json updated'
-            "
+
+          sft ssh target-server-01 <<SSHEOF
+          echo "${PAYLOAD_B64}" | base64 -d | sudo tee /var/www/demo-app/state.json > /dev/null
+          echo 'state.json updated'
+          SSHEOF
 
           END_TS=$(date +%s)
           DURATION=$((END_TS - START_TS))
+          echo "SSH_DURATION=${DURATION}" >> $GITHUB_ENV
           echo "✅ SSH session closed. Duration: ${DURATION}s. Certificate expired."
           echo "✅ JIT account (wl_github_actions) torn down by OPA."
 
       # ── Step 6: Patch session_duration back into state.json ─────────────
       - name: Update session duration
         run: |
-          START_TS=$(date +%s)
+          DUR=${SSH_DURATION:-0}
 
-          sft ssh target-server-01 \
-            bash -c "
-              CURRENT=\$(cat /var/www/demo-app/state.json)
-              echo \"\$CURRENT\" | jq \
-                --argjson dur $(($(date +%s) - START_TS)) \
-                '.session_duration_seconds = \$dur' | \
-                sudo tee /var/www/demo-app/state.json > /dev/null
-            " || echo "Duration patch skipped (token may have expired — that's fine)"
+          sft ssh target-server-01 <<SSHEOF || echo "Duration patch skipped (token may have expired — that's fine)"
+          CURRENT=\$(cat /var/www/demo-app/state.json)
+          printf '%s\n' "\$CURRENT" | jq --argjson dur ${DUR} '.session_duration_seconds = \$dur' | sudo tee /var/www/demo-app/state.json > /dev/null
+          SSHEOF
 
       # ── Summary ─────────────────────────────────────────────────────────
       - name: Summary
