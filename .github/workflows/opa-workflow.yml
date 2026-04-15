@@ -27,8 +27,11 @@ jobs:
       # ── Step 1: Install sft CLI ──────────────────────────────────────────
       - name: Install OPA sft CLI
         run: |
-          curl -fsSL https://dist.scaleft.com/install.sh | bash
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          curl -fsSL https://www.scaleft.com/dl/scaleft-repo-deb.gpg | sudo apt-key add -
+          echo "deb https://pkg.scaleft.com/deb linux main" | sudo tee /etc/apt/sources.list.d/scaleft.list
+          sudo apt-get update -y
+          sudo apt-get install -y scaleft-client-tools
+          sft --version
 
       # ── Step 2: Configure OPA gateway ───────────────────────────────────
       - name: Configure sft
