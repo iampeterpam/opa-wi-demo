@@ -86,7 +86,7 @@ jobs:
           echo "Opening brokered SSH session to target-server-01..."
 
           sft ssh target-server-01 \
-            -- bash -c "
+            bash -c "
               PAYLOAD=\$(cat <<'JSON'
           {
             \"customer\": \"${{ github.event.inputs.customer_name }}\",
@@ -118,7 +118,7 @@ jobs:
           START_TS=$(date +%s)
 
           sft ssh target-server-01 \
-            -- bash -c "
+            bash -c "
               CURRENT=\$(cat /var/www/demo-app/state.json)
               echo \"\$CURRENT\" | jq \
                 --argjson dur $(($(date +%s) - START_TS)) \
