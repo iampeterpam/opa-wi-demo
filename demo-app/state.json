@@ -1,0 +1,13 @@
+{
+  "customer": "peter_farley",
+  "status": "awaiting_deployment",
+  "last_deploy": null,
+  "deployed_by": null,
+  "session_duration_seconds": null,
+  "standing_credentials_used": 0,
+  "deployment_count": 0,
+  "opa_connection": "github-actions-prod",
+  "git_repo": "iampeterpam/opa-wi-demo",
+  "git_branch": null,
+  "git_commit": null
+}

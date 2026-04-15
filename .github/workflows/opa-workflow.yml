@@ -1,0 +1,130 @@
+# .github/workflows/opa-workflow.yml
+# OPA WORKLOAD IDENTITY APPROACH — THIS IS THE LIVE DEMO WORKFLOW
+# Push to main branch. Trigger this during Act 2.
+# Zero stored credentials. GitHub OIDC JWT → OPA token → ephemeral SSH cert.
+
+name: Deploy (OPA Workload Identity)
+
+on:
+  workflow_dispatch:
+    inputs:
+      customer_name:
+        description: 'Customer name to display on dashboard'
+        required: true
+        default: 'peter_farley'
+
+permissions:
+  id-token: write   # Required: allows GitHub to issue OIDC JWT to this job
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ── Step 1: Install sft CLI ──────────────────────────────────────────
+      - name: Install OPA sft CLI
+        run: |
+          curl -fsSL https://dist.scaleft.com/install.sh | sh
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      # ── Step 2: Configure OPA gateway ───────────────────────────────────
+      - name: Configure sft
+        run: |
+          mkdir -p ~/.config/sft
+          cat > ~/.config/sft/sft.yaml <<EOF
+          address: pfarley.pam.oktapreview.com
+          EOF
+
+      # ── Step 3: Request GitHub OIDC JWT ─────────────────────────────────
+      - name: Request GitHub OIDC Token
+        id: oidc
+        run: |
+          echo "Requesting OIDC token from GitHub..."
+          OIDC_TOKEN=$(curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=pfarley.pam.oktapreview.com" | jq -r '.value')
+          echo "::add-mask::$OIDC_TOKEN"
+          echo "token=$OIDC_TOKEN" >> $GITHUB_OUTPUT
+          echo "✅ OIDC token received (masked)"
+
+      # ── Step 4: Authenticate with OPA Workload Identity ─────────────────
+      - name: Authenticate with OPA Workload Identity
+        id: opa-auth
+        env:
+          GITHUB_OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
+        run: |
+          echo "Authenticating with OPA using Workload Connection: github-actions-prod"
+          OPA_TOKEN=$(sft workload authenticate \
+            --team farley \
+            --connection github-actions-prod \
+            --jwt-env GITHUB_OIDC_TOKEN)
+          echo "::add-mask::$OPA_TOKEN"
+          echo "OPA_TOKEN=$OPA_TOKEN" >> $GITHUB_ENV
+          echo "✅ OPA token issued (TTL: 300s)"
+
+      # ── Step 5: SSH into target and update state.json ────────────────────
+      - name: Update dashboard via brokered SSH
+        run: |
+          TIMESTAMP=$(date -u '+%Y-%m-%dT%H:%M:%SZ')
+          START_TS=$(date +%s)
+
+          echo "Opening brokered SSH session to target-server-01..."
+
+          sft ssh target-server-01 \
+            --token "$OPA_TOKEN" \
+            -- bash -c "
+              PAYLOAD=\$(cat <<'JSON'
+          {
+            \"customer\": \"${{ github.event.inputs.customer_name }}\",
+            \"status\": \"success\",
+            \"last_deploy\": \"${TIMESTAMP}\",
+            \"deployed_by\": \"wl_github_actions (OPA Workload Identity)\",
+            \"session_duration_seconds\": null,
+            \"standing_credentials_used\": 0,
+            \"deployment_count\": 1,
+            \"opa_connection\": \"github-actions-prod\",
+            \"git_repo\": \"${{ github.repository }}\",
+            \"git_branch\": \"${{ github.ref_name }}\",
+            \"git_commit\": \"${{ github.sha }}\"
+          }
+          JSON
+          )
+              echo \"\$PAYLOAD\" | sudo tee /var/www/demo-app/state.json > /dev/null
+              echo 'state.json updated'
+            "
+
+          END_TS=$(date +%s)
+          DURATION=$((END_TS - START_TS))
+          echo "✅ SSH session closed. Duration: ${DURATION}s. Certificate expired."
+          echo "✅ JIT account (wl_github_actions) torn down by OPA."
+
+      # ── Step 6: Patch session_duration back into state.json ─────────────
+      - name: Update session duration
+        run: |
+          START_TS=$(date +%s)
+
+          sft ssh target-server-01 \
+            --token "$OPA_TOKEN" \
+            -- bash -c "
+              CURRENT=\$(cat /var/www/demo-app/state.json)
+              echo \"\$CURRENT\" | jq \
+                --argjson dur $(($(date +%s) - START_TS)) \
+                '.session_duration_seconds = \$dur' | \
+                sudo tee /var/www/demo-app/state.json > /dev/null
+            " || echo "Duration patch skipped (token may have expired — that's fine)"
+
+      # ── Summary ─────────────────────────────────────────────────────────
+      - name: Summary
+        run: |
+          echo "## OPA Workload Identity — Deployment Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Field | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| Customer | ${{ github.event.inputs.customer_name }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| OPA Connection | github-actions-prod |" >> $GITHUB_STEP_SUMMARY
+          echo "| Branch | ${{ github.ref_name }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Commit | ${{ github.sha }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Standing Credentials | **0** |" >> $GITHUB_STEP_SUMMARY
+          echo "| JWT Source | GitHub OIDC |" >> $GITHUB_STEP_SUMMARY

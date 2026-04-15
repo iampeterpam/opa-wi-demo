@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mission Control — OPA Workload Identity Demo</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      background: #0a0e1a;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: linear-gradient(135deg, #1a1f35 0%, #0f1729 100%);
+      border-bottom: 1px solid #2d3a5a;
+      padding: 20px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .okta-badge {
+      background: #0061F2;
+      color: white;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      padding: 4px 10px;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      font-size: 20px;
+      font-weight: 600;
+      color: #f8fafc;
+      letter-spacing: -0.3px;
+    }
+
+    h1 span { color: #60a5fa; }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .refresh-badge { font-size: 11px; color: #64748b; }
+
+    .live-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #22c55e;
+      animation: pulse 2s infinite;
+      margin-right: 6px;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: auto auto auto;
+      gap: 16px;
+      padding: 24px 32px;
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: #111827;
+      border: 1px solid #1e2d4a;
+      border-radius: 10px;
+      padding: 20px 24px;
+    }
+
+    .card-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #475569;
+      margin-bottom: 8px;
+    }
+
+    .card-value {
+      font-size: 15px;
+      color: #f1f5f9;
+      word-break: break-all;
+    }
+
+    .card-hero {
+      grid-column: 1 / -1;
+      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+      border: 1px solid #3730a3;
+      border-radius: 10px;
+      padding: 28px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .hero-status {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .hero-status-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #6366f1;
+    }
+
+    .hero-status-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: #f8fafc;
+    }
+
+    .hero-status-value.awaiting { color: #94a3b8; }
+    .hero-status-value.success  { color: #22c55e; }
+
+    .credential-counter { text-align: right; }
+
+    .credential-number {
+      font-size: 64px;
+      font-weight: 800;
+      color: #22c55e;
+      line-height: 1;
+    }
+
+    .credential-number.nonzero { color: #ef4444; }
+
+    .credential-label {
+      font-size: 11px;
+      color: #64748b;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+
+    .card-security {
+      grid-column: 1 / -1;
+      background: #111827;
+      border: 1px solid #1e2d4a;
+      border-radius: 10px;
+      padding: 20px 24px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #0f172a;
+      border: 1px solid #1e2d4a;
+      border-radius: 6px;
+      padding: 10px 16px;
+      font-size: 12px;
+      color: #94a3b8;
+      flex: 1;
+      min-width: 180px;
+    }
+
+    .badge-icon { font-size: 16px; }
+    .badge.active  { border-color: #22c55e44; color: #4ade80; }
+    .badge.inactive { border-color: #1e2d4a; color: #475569; }
+
+    footer {
+      border-top: 1px solid #1e2d4a;
+      padding: 12px 32px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: #334155;
+    }
+
+    .deployed-by {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .wl-badge {
+      background: #1e3a5f;
+      color: #60a5fa;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <span class="okta-badge">OPA</span>
+    <h1>Mission Control — <span id="customer-name">Loading…</span></h1>
+  </div>
+  <div class="header-right">
+    <span class="refresh-badge"><span class="live-dot"></span>Live · refreshes every 3s</span>
+  </div>
+</header>
+
+<main>
+
+  <div class="card-hero">
+    <div class="hero-status">
+      <div class="hero-status-label">Deployment Status</div>
+      <div class="hero-status-value awaiting" id="deploy-status">Awaiting deployment…</div>
+      <div style="margin-top:8px; font-size:13px; color:#64748b;" id="deploy-timestamp">—</div>
+    </div>
+    <div class="credential-counter">
+      <div class="credential-number" id="cred-count">0</div>
+      <div class="credential-label">Standing Credentials Used</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">Deployed By</div>
+    <div class="card-value deployed-by">
+      <span class="wl-badge" id="deployed-by-badge" style="display:none">WL</span>
+      <span id="deployed-by">—</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">Session Duration</div>
+    <div class="card-value" id="session-duration">—</div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">OPA Workload Connection</div>
+    <div class="card-value" id="opa-connection">—</div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">Git Commit · Branch · Repo</div>
+    <div class="card-value" id="git-info">—</div>
+  </div>
+
+  <div class="card-security">
+    <div class="badge inactive" id="badge-oidc">
+      <span class="badge-icon">🔐</span>
+      <span>OIDC Token Validated</span>
+    </div>
+    <div class="badge inactive" id="badge-cert">
+      <span class="badge-icon">📜</span>
+      <span>Ephemeral SSH Cert Issued</span>
+    </div>
+    <div class="badge inactive" id="badge-jit">
+      <span class="badge-icon">⚡</span>
+      <span>JIT Account Created</span>
+    </div>
+    <div class="badge inactive" id="badge-teardown">
+      <span class="badge-icon">🔒</span>
+      <span>Session Closed · Cert Expired</span>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <span id="footer-connection">OPA Connection: —</span>
+  <span id="footer-count">Deployments: 0</span>
+  <span>Workload Identity for Automation · Okta Privileged Access</span>
+</footer>
+
+<script>
+  const STATE_URL = '/state.json';
+  const REFRESH_MS = 3000;
+
+  function fmt(val, fallback = '—') {
+    return (val !== null && val !== undefined && val !== '') ? val : fallback;
+  }
+
+  function renderState(s) {
+    document.getElementById('customer-name').textContent = fmt(s.customer, 'Demo Customer');
+
+    const cred = s.standing_credentials_used || 0;
+    const credEl = document.getElementById('cred-count');
+    credEl.textContent = cred;
+    credEl.className = 'credential-number' + (cred > 0 ? ' nonzero' : '');
+
+    const statusEl = document.getElementById('deploy-status');
+    const tsEl = document.getElementById('deploy-timestamp');
+
+    if (s.status === 'success' && s.last_deploy) {
+      statusEl.textContent = '✅ Deployment Successful';
+      statusEl.className = 'hero-status-value success';
+      tsEl.textContent = 'Last deploy: ' + s.last_deploy;
+    } else {
+      statusEl.textContent = 'Awaiting deployment…';
+      statusEl.className = 'hero-status-value awaiting';
+      tsEl.textContent = '—';
+    }
+
+    const dbVal = fmt(s.deployed_by);
+    document.getElementById('deployed-by').textContent = dbVal;
+    const badge = document.getElementById('deployed-by-badge');
+    badge.style.display = dbVal.startsWith('wl_') ? 'inline-block' : 'none';
+
+    const dur = s.session_duration_seconds;
+    document.getElementById('session-duration').textContent =
+      dur !== null && dur !== undefined ? dur + 's' : '—';
+
+    document.getElementById('opa-connection').textContent = fmt(s.opa_connection);
+
+    const branch = fmt(s.git_branch, '');
+    const commit = s.git_commit ? s.git_commit.slice(0, 7) : '';
+    const repo = fmt(s.git_repo, '');
+    const gitParts = [commit, branch, repo].filter(Boolean);
+    document.getElementById('git-info').textContent = gitParts.join(' · ') || '—';
+
+    const deployed = s.status === 'success';
+    ['badge-oidc', 'badge-cert', 'badge-jit', 'badge-teardown'].forEach(id => {
+      document.getElementById(id).className = 'badge ' + (deployed ? 'active' : 'inactive');
+    });
+
+    document.getElementById('footer-connection').textContent =
+      'OPA Connection: ' + fmt(s.opa_connection);
+    document.getElementById('footer-count').textContent =
+      'Deployments: ' + (s.deployment_count || 0);
+  }
+
+  async function fetchState() {
+    try {
+      const resp = await fetch(STATE_URL + '?_=' + Date.now());
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      const data = await resp.json();
+      renderState(data);
+    } catch (e) {
+      console.warn('State fetch error:', e.message);
+    }
+  }
+
+  fetchState();
+  setInterval(fetchState, REFRESH_MS);
+</script>
+</body>
+</html>

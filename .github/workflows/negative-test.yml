@@ -1,0 +1,56 @@
+# .github/workflows/negative-test.yml
+# Triggers from a feature branch — OPA Workload Role condition blocks it.
+# Expected result: sft workload authenticate exits non-zero with claim mismatch.
+# Use in Act 3 to prove that non-main branches are rejected at the identity layer.
+
+name: Negative Test — Non-Main Branch (Expected Failure)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  negative-test:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - name: Install sft
+        run: |
+          curl -fsSL https://dist.scaleft.com/install.sh | sh
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Configure sft
+        run: |
+          mkdir -p ~/.config/sft
+          cat > ~/.config/sft/sft.yaml <<EOF
+          address: pfarley.pam.oktapreview.com
+          EOF
+
+      - name: Request GitHub OIDC Token
+        id: oidc
+        run: |
+          OIDC_TOKEN=$(curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=pfarley.pam.oktapreview.com" | jq -r '.value')
+          echo "::add-mask::$OIDC_TOKEN"
+          echo "token=$OIDC_TOKEN" >> $GITHUB_OUTPUT
+
+      - name: Attempt OPA auth (EXPECTED TO FAIL — branch is not main)
+        env:
+          GITHUB_OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
+        run: |
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Expected: OPA rejects this token — Workload Role requires refs/heads/main"
+          echo ""
+          sft workload authenticate \
+            --team farley \
+            --connection github-actions-prod \
+            --jwt-env GITHUB_OIDC_TOKEN || {
+            echo "❌ Authentication rejected by OPA — as expected."
+            echo "This pipeline cannot gain access because the branch condition failed."
+            exit 0
+          }
+          echo "⚠️  Authentication succeeded — check Workload Role conditions."
+          exit 1
