@@ -33,6 +33,7 @@ jobs:
           cat > ~/.config/sft/sft.yaml <<EOF
           address: pfarley.pam.oktapreview.com
           EOF
+          echo "OPA_ADDR=pfarley.pam.oktapreview.com" >> $GITHUB_ENV
 
       - name: Request GitHub OIDC Token
         id: oidc

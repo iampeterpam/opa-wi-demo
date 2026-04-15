@@ -42,6 +42,7 @@ jobs:
           cat > ~/.config/sft/sft.yaml <<EOF
           address: pfarley.pam.oktapreview.com
           EOF
+          echo "OPA_ADDR=pfarley.pam.oktapreview.com" >> $GITHUB_ENV
 
       # ── Step 3: Request GitHub OIDC JWT ─────────────────────────────────
       - name: Request GitHub OIDC Token
