@@ -19,8 +19,10 @@ jobs:
     steps:
       - name: Install sft
         run: |
-          curl -fsSL https://www.scaleft.com/dl/scaleft-repo-deb.gpg | sudo apt-key add -
-          echo "deb https://pkg.scaleft.com/deb linux main" | sudo tee /etc/apt/sources.list.d/scaleft.list
+          curl -fsSL https://dist.scaleft.com/repos/deb/oktapam-2023-archive-keyring.gpg | \
+            sudo tee /usr/share/keyrings/oktapam-2023-archive-keyring.gpg > /dev/null
+          echo "deb [signed-by=/usr/share/keyrings/oktapam-2023-archive-keyring.gpg] https://dist.scaleft.com/repos/deb jammy okta" | \
+            sudo tee /etc/apt/sources.list.d/scaleft.list
           sudo apt-get update -y
           sudo apt-get install -y scaleft-client-tools
           sft --version
