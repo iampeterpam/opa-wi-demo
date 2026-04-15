@@ -1,0 +1,40 @@
+# .github/workflows/before-workflow.yml
+# LEGACY APPROACH — shown for contrast only, never executed live
+# Push this file to the 'before' branch.
+# Add a dummy SSH_PRIVATE_KEY secret to the repo so it appears in Settings > Secrets.
+#
+# This workflow uses a static SSH private key stored as a GitHub Secret.
+# The key has been in this repo for 18 months. Nobody knows who else has it.
+
+name: Deploy (Legacy — Static SSH Key)
+
+on:
+  workflow_dispatch:
+    inputs:
+      customer_name:
+        description: 'Customer name to display on dashboard'
+        required: true
+        default: 'peter_farley'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up SSH key
+        # ⚠️  Static private key — stored forever in GitHub Secrets
+        # ⚠️  18 months old, never rotated
+        # ⚠️  Grants standing SSH access to target-server-01
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan 34.9.108.119 >> ~/.ssh/known_hosts
+
+      - name: Deploy state.json
+        run: |
+          TIMESTAMP=$(date -u '+%Y-%m-%dT%H:%M:%SZ')
+          ssh -i ~/.ssh/id_rsa peter_farley_okta@34.9.108.119 \
+            "echo '{\"customer\":\"${{ github.event.inputs.customer_name }}\",\"status\":\"success\",\"last_deploy\":\"'$TIMESTAMP'\",\"deployed_by\":\"ci_service_account\",\"session_duration_seconds\":null,\"standing_credentials_used\":1,\"deployment_count\":1,\"opa_connection\":null,\"git_repo\":\"${{ github.repository }}\",\"git_branch\":\"${{ github.ref_name }}\",\"git_commit\":\"${{ github.sha }}\"}' | sudo tee /var/www/demo-app/state.json"
