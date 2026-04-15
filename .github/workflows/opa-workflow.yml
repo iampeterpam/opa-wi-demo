@@ -68,6 +68,11 @@ jobs:
           GITHUB_OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
         run: |
           echo "Authenticating with OPA using Workload Connection: github-actions-prod"
+          sft --log-level debug workload authenticate \
+            --team farley \
+            --connection github-actions-prod \
+            --jwt-env GITHUB_OIDC_TOKEN 2>&1 | tee /tmp/sft-debug.log || true
+          echo "--- sft exit code captured ---"
           OPA_TOKEN=$(sft workload authenticate \
             --team farley \
             --connection github-actions-prod \
