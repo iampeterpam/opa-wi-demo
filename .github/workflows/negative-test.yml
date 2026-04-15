@@ -19,7 +19,7 @@ jobs:
     steps:
       - name: Install sft
         run: |
-          curl -fsSL https://dist.scaleft.com/install.sh | sh
+          curl -fsSL https://dist.scaleft.com/install.sh | bash
           echo "$HOME/.local/bin" >> $GITHUB_PATH
 
       - name: Configure sft
