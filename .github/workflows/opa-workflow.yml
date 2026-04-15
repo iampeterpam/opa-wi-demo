@@ -86,8 +86,6 @@ jobs:
           echo "Opening brokered SSH session to target-server-01..."
 
           sft ssh target-server-01 \
-            --team farley \
-            --workload-role github_actions \
             -- bash -c "
               PAYLOAD=\$(cat <<'JSON'
           {
@@ -120,8 +118,6 @@ jobs:
           START_TS=$(date +%s)
 
           sft ssh target-server-01 \
-            --team farley \
-            --workload-role github_actions \
             -- bash -c "
               CURRENT=\$(cat /var/www/demo-app/state.json)
               echo \"\$CURRENT\" | jq \
