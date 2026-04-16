@@ -70,18 +70,18 @@ jobs:
           echo "=== sft workload authenticate --help ==="
           sft workload authenticate --help 2>&1 || true
 
-          echo "=== direct OPA API probe (rawClientToken) ==="
+          echo "=== direct OPA API probe (JWT as Bearer, connectionName in body) ==="
           curl -s -w "\nHTTP_STATUS:%{http_code}" -X POST \
             "https://pfarley.pam.oktapreview.com/v1/teams/farley/connections/workloads" \
             -H "Content-Type: application/json" \
-            -d "{\"connectionName\":\"github-actions-prod\",\"rawClientToken\":\"${GITHUB_OIDC_TOKEN}\"}" || true
+            -H "Authorization: Bearer ${GITHUB_OIDC_TOKEN}" \
+            -d "{\"connectionName\":\"github-actions-prod\"}" || true
 
           echo ""
-          echo "=== direct OPA API probe (token field) ==="
-          curl -s -w "\nHTTP_STATUS:%{http_code}" -X POST \
-            "https://pfarley.pam.oktapreview.com/v1/teams/farley/connections/workloads" \
-            -H "Content-Type: application/json" \
-            -d "{\"connectionName\":\"github-actions-prod\",\"token\":\"${GITHUB_OIDC_TOKEN}\"}" || true
+          echo "=== direct OPA API probe (JWT as Bearer, no body) ==="
+          curl -s -w "\nHTTP_STATUS:%{http_code}" -X GET \
+            "https://pfarley.pam.oktapreview.com/v1/teams/farley/connections/workloads/github-actions-prod/token" \
+            -H "Authorization: Bearer ${GITHUB_OIDC_TOKEN}" || true
 
           echo ""
           echo "=== authenticate ==="
