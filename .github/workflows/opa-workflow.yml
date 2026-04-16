@@ -85,12 +85,19 @@ jobs:
         env:
           GITHUB_OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
         run: |
-          # Direct curl to OPA issue_token endpoint — bypass sft to see raw response
-          echo "=== Direct curl to OPA issue_token endpoint ==="
-          curl -s -w "\nHTTP: %{http_code}" \
+          # Direct curl with verbose headers — look for trace/request IDs in response
+          echo "=== Direct curl (verbose headers) to OPA issue_token ==="
+          curl -si -w "\nHTTP: %{http_code}" \
             -X POST "https://pfarley.pam.oktapreview.com/v1/teams/farley/workloads/github-actions-prod/issue_token" \
             -H "Content-Type: application/json" \
-            -d "{\"credential_type\":\"jwt\",\"jwt\":\"${GITHUB_OIDC_TOKEN}\"}" || true
+            -d "{\"credential_type\":\"jwt\",\"jwt\":\"${GITHUB_OIDC_TOKEN}\"}" 2>&1 | grep -v "^Authorization:" || true
+          echo ""
+
+          # Try OIDC token as Bearer against connections list — see if workload token grants read access
+          echo "=== GET /v1/teams/farley/connections/workloads (OIDC as Bearer) ==="
+          curl -s -w "\nHTTP: %{http_code}" \
+            -H "Authorization: Bearer ${GITHUB_OIDC_TOKEN}" \
+            "https://pfarley.pam.oktapreview.com/v1/teams/farley/connections/workloads" || true
           echo ""
 
           echo "=== sft workload authenticate ==="
