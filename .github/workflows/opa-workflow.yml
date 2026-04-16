@@ -42,6 +42,12 @@ jobs:
           echo "OPA_ADDR=https://pfarley.pam.oktapreview.com" >> $GITHUB_ENV
           echo "SFT_TEAM=farley" >> $GITHUB_ENV
 
+          # Probe sft binary for API endpoint paths and config key names
+          echo "=== sft API paths (workload/token/authenticate) ==="
+          strings $(which sft) | grep -E '/(v[0-9]|workload|token|authenticate|opa)' | sort -u | head -30 || true
+          echo "=== sft config keys ==="
+          strings $(which sft) | grep -iE '^[a-z][a-z_]{2,20}$' | sort -u | grep -iE '(url|addr|server|host|gateway|team|address)' | head -20 || true
+
       # ── Step 3: Request GitHub OIDC JWT ─────────────────────────────────
       - name: Request GitHub OIDC Token
         id: oidc
