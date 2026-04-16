@@ -4,23 +4,80 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mission Control — OPA Workload Identity Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
-      background: #050a14;
-      color: #f1f5f9;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+      background: #f4f4f4;
+      color: #1d1d21;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
     }
 
+    /* ── OPA Top Navigation Bar ─────────────────────────────────── */
+
+    .opa-nav {
+      background: #ffffff;
+      border-bottom: 1px solid #e1e3e8;
+      padding: 0 40px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      gap: 0;
+      flex-shrink: 0;
+    }
+
+    .opa-nav-brand {
+      font-size: 15px;
+      font-weight: 700;
+      color: #1d1d21;
+      letter-spacing: -0.3px;
+    }
+
+    .opa-nav-sep {
+      width: 1px;
+      height: 18px;
+      background: #c9cdd4;
+      margin: 0 14px;
+    }
+
+    .opa-nav-product {
+      font-size: 14px;
+      font-weight: 500;
+      color: #6e6e78;
+    }
+
+    .opa-nav-pipe {
+      color: #c9cdd4;
+      margin: 0 14px;
+      font-weight: 300;
+    }
+
+    .opa-nav-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: #1d1d21;
+    }
+
+    .opa-nav-live {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: #6e6e78;
+    }
+
     /* ── Row 1: Hero Banner ─────────────────────────────────────── */
 
     .hero {
-      background: linear-gradient(135deg, #0d1424 0%, #0a1020 100%);
-      border-bottom: 1px solid #1a2744;
+      background: #ffffff;
+      border-bottom: 1px solid #e1e3e8;
       padding: 28px 40px 20px;
       display: grid;
       grid-template-columns: 1fr auto 1fr;
@@ -39,26 +96,26 @@
       font-weight: 700;
       letter-spacing: 2px;
       text-transform: uppercase;
-      color: #475569;
+      color: #6e6e78;
     }
 
     .hero-status-value {
-      font-size: 42px;
+      font-size: 24px;
       font-weight: 700;
-      line-height: 1.1;
+      line-height: 1.2;
       transition: color 0.4s ease;
     }
 
     .hero-status-value.awaiting {
-      color: #475569;
-      font-size: 32px;
+      color: #9e9ea8;
+      font-size: 20px;
     }
 
-    .hero-status-value.success { color: #22c55e; }
+    .hero-status-value.success { color: #1e7e34; }
 
     .hero-timestamp {
       font-size: 13px;
-      color: #475569;
+      color: #6e6e78;
       margin-top: 4px;
     }
 
@@ -71,14 +128,14 @@
       font-weight: 700;
       letter-spacing: 2px;
       text-transform: uppercase;
-      color: #3b82f6;
+      color: #0061F2;
       margin-bottom: 6px;
     }
 
     .hero-customer-name {
       font-size: 28px;
       font-weight: 500;
-      color: #f1f5f9;
+      color: #1d1d21;
     }
 
     .hero-right {
@@ -92,18 +149,12 @@
       font-size: 88px;
       font-weight: 700;
       line-height: 1;
-      color: #f1f5f9;
-      transition: color 0.4s ease, text-shadow 0.4s ease;
+      color: #1d1d21;
+      transition: color 0.4s ease;
     }
 
     .cred-counter.deployed {
-      color: #22c55e;
-      text-shadow: 0 0 30px rgba(34, 197, 94, 0.6);
-    }
-
-    .cred-counter.nonzero {
-      color: #ef4444;
-      text-shadow: 0 0 30px rgba(239, 68, 68, 0.6);
+      color: #1e7e34;
     }
 
     .cred-label {
@@ -111,7 +162,7 @@
       font-weight: 700;
       letter-spacing: 2px;
       text-transform: uppercase;
-      color: #475569;
+      color: #6e6e78;
       text-align: right;
     }
 
@@ -121,9 +172,9 @@
       align-items: center;
       gap: 8px;
       font-size: 11px;
-      color: #475569;
+      color: #6e6e78;
       padding-top: 12px;
-      border-top: 1px solid #1a2744;
+      border-top: 1px solid #e1e3e8;
       margin-top: 4px;
     }
 
@@ -146,7 +197,8 @@
 
     .flow-row {
       padding: 24px 40px;
-      border-bottom: 1px solid #1a2744;
+      border-bottom: 1px solid #e1e3e8;
+      background: #ffffff;
     }
 
     .flow-label {
@@ -154,7 +206,7 @@
       font-weight: 700;
       letter-spacing: 2px;
       text-transform: uppercase;
-      color: #475569;
+      color: #6e6e78;
       margin-bottom: 16px;
     }
 
@@ -166,8 +218,8 @@
 
     .flow-node {
       flex: 1;
-      background: #0d1424;
-      border: 1px solid #1a2744;
+      background: #ffffff;
+      border: 1px solid #e1e3e8;
       border-radius: 10px;
       padding: 16px 20px;
       display: flex;
@@ -177,9 +229,9 @@
     }
 
     .flow-node.active {
-      border-color: #22c55e44;
-      box-shadow: 0 0 24px rgba(34, 197, 94, 0.35);
-      background: #0d1e16;
+      border-color: #0061F2;
+      box-shadow: 0 0 24px rgba(0, 97, 242, 0.12);
+      background: #e8f0fe;
     }
 
     .flow-node-icon { font-size: 22px; }
@@ -187,28 +239,28 @@
     .flow-node-title {
       font-size: 13px;
       font-weight: 700;
-      color: #94a3b8;
+      color: #6e6e78;
       transition: color 0.5s ease;
     }
 
-    .flow-node.active .flow-node-title { color: #f1f5f9; }
+    .flow-node.active .flow-node-title { color: #1d1d21; }
 
     .flow-node-detail {
       font-size: 11px;
-      color: #334155;
+      color: #9e9ea8;
       transition: color 0.5s ease;
     }
 
-    .flow-node.active .flow-node-detail { color: #4ade80; }
+    .flow-node.active .flow-node-detail { color: #0061F2; }
 
     .flow-node-check {
       font-size: 11px;
-      color: #1a2744;
+      color: #e1e3e8;
       font-weight: 700;
       transition: color 0.5s ease;
     }
 
-    .flow-node.active .flow-node-check { color: #22c55e; }
+    .flow-node.active .flow-node-check { color: #1e7e34; }
 
     .flow-arrow {
       flex: 0 0 60px;
@@ -221,12 +273,12 @@
     .flow-arrow-line {
       width: 100%;
       height: 2px;
-      background: #1a2744;
+      background: #e1e3e8;
       position: relative;
       transition: background 0.5s ease;
     }
 
-    .flow-arrow-line.active { background: #22c55e44; }
+    .flow-arrow-line.active { background: #0061F2; }
 
     .flow-arrow-line::after {
       content: '';
@@ -235,24 +287,24 @@
       top: -5px;
       width: 0;
       height: 0;
-      border-left: 8px solid #1a2744;
+      border-left: 8px solid #e1e3e8;
       border-top: 6px solid transparent;
       border-bottom: 6px solid transparent;
       transition: border-left-color 0.5s ease;
     }
 
-    .flow-arrow-line.active::after { border-left-color: #22c55e44; }
+    .flow-arrow-line.active::after { border-left-color: #0061F2; }
 
     .flow-arrow-label {
       font-size: 9px;
-      color: #334155;
+      color: #9e9ea8;
       letter-spacing: 0.5px;
       text-align: center;
       transition: color 0.5s ease;
       margin-top: 6px;
     }
 
-    .flow-arrow-line.active + .flow-arrow-label { color: #4ade80; }
+    .flow-arrow-line.active + .flow-arrow-label { color: #0061F2; }
 
     /* ── Light card base ────────────────────────────────────────── */
 
@@ -261,12 +313,12 @@
       grid-template-columns: 1fr 1fr;
       gap: 16px;
       padding: 20px 40px;
-      border-bottom: 1px solid #1a2744;
+      border-bottom: 1px solid #e1e3e8;
     }
 
     .card {
       background: #ffffff;
-      border: 1px solid #e2e8f0;
+      border: 1px solid #e1e3e8;
       border-radius: 10px;
       padding: 20px 24px;
       display: flex;
@@ -276,8 +328,8 @@
     }
 
     .card.active {
-      border-color: #16a34a;
-      box-shadow: 0 0 12px rgba(22, 163, 74, 0.15);
+      border-color: #0061F2;
+      box-shadow: 0 0 12px rgba(0, 97, 242, 0.12);
     }
 
     .card-label {
@@ -285,24 +337,24 @@
       font-weight: 700;
       letter-spacing: 1.5px;
       text-transform: uppercase;
-      color: #64748b;
+      color: #6e6e78;
     }
 
     .card-value {
       font-size: 16px;
-      color: #0f172a;
+      color: #1d1d21;
       word-break: break-all;
     }
 
     .card-sub {
       font-size: 13px;
-      color: #475569;
+      color: #6e6e78;
     }
 
     .wl-badge {
       display: inline-block;
-      background: #1e3a5f;
-      color: #60a5fa;
+      background: #e8f0fe;
+      color: #0061F2;
       font-size: 10px;
       padding: 2px 8px;
       border-radius: 4px;
@@ -316,67 +368,58 @@
 
     .badges-row {
       padding: 20px 40px;
-      border-bottom: 1px solid #1a2744;
+      border-bottom: 1px solid #e1e3e8;
+      background: #ffffff;
       display: flex;
       gap: 12px;
     }
 
     .badge {
-      flex: 1;
       display: flex;
       align-items: center;
-      gap: 10px;
-      background: #0d1424;
-      border: 1px solid #1a2744;
-      border-radius: 8px;
-      padding: 14px 18px;
+      gap: 6px;
+      background: #f4f4f4;
+      border: 1px solid #e1e3e8;
+      border-radius: 20px;
+      padding: 0 14px;
+      height: 38px;
       font-size: 12px;
-      color: #334155;
+      font-weight: 700;
+      color: #9e9ea8;
+      white-space: nowrap;
       transition: border-color 0.5s ease, color 0.5s ease, box-shadow 0.5s ease, background 0.5s ease;
     }
 
     .badge.active {
-      border-color: #22c55e44;
-      color: #4ade80;
-      background: #0a1a10;
-      box-shadow: 0 0 12px rgba(34, 197, 94, 0.12);
+      border-color: #b7dfb7;
+      color: #1e7e34;
+      background: #e3f5e1;
     }
 
-    .badge-icon { font-size: 18px; flex-shrink: 0; }
-
-    .badge-text {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-
-    .badge-title {
-      font-size: 12px;
+    .badge-check {
+      font-size: 13px;
       font-weight: 700;
-      letter-spacing: 0.3px;
-    }
-
-    .badge-sub {
-      font-size: 10px;
-      opacity: 0.7;
     }
 
     /* ── Evidence Sections ──────────────────────────────────────── */
 
     .evidence-section {
-      padding: 20px 40px;
-      border-bottom: 1px solid #1a2744;
+      padding: 16px 40px;
+      border-bottom: 1px solid #e1e3e8;
+      background: #f4f4f4;
       display: none;
     }
 
     .evidence-section.visible { display: block; }
+
+    #section-oidc { border-top: 3px solid #e1e3e8; }
 
     .evidence-section-title {
       font-size: 10px;
       font-weight: 700;
       letter-spacing: 2px;
       text-transform: uppercase;
-      color: #475569;
+      color: #6e6e78;
       margin-bottom: 14px;
     }
 
@@ -388,7 +431,7 @@
 
     .evidence-card {
       background: #ffffff;
-      border: 1px solid #e2e8f0;
+      border: 1px solid #e1e3e8;
       border-radius: 10px;
       padding: 18px 22px;
       display: flex;
@@ -407,17 +450,17 @@
       font-weight: 700;
       letter-spacing: 1.5px;
       text-transform: uppercase;
-      color: #64748b;
+      color: #6e6e78;
     }
 
     .evidence-value {
       font-size: 14px;
-      color: #0f172a;
+      color: #1d1d21;
       word-break: break-all;
     }
 
     .evidence-value a {
-      color: #2563eb;
+      color: #0061F2;
       text-decoration: none;
     }
 
@@ -426,12 +469,13 @@
     /* Full-width evidence card (token sections) */
     .evidence-card-full {
       background: #ffffff;
-      border: 1px solid #e2e8f0;
+      border: 1px solid #e1e3e8;
       border-radius: 10px;
       padding: 18px 22px;
       display: flex;
       flex-direction: column;
       gap: 14px;
+      overflow-x: hidden;
     }
 
     .evidence-card-header {
@@ -444,14 +488,14 @@
     .evidence-step-label {
       font-size: 12px;
       font-weight: 700;
-      color: #0f172a;
+      color: #1d1d21;
       letter-spacing: 0.3px;
     }
 
     .evidence-step-num {
       display: inline-block;
-      background: #0f172a;
-      color: #f8fafc;
+      background: #0061F2;
+      color: #ffffff;
       font-size: 10px;
       font-weight: 700;
       padding: 2px 7px;
@@ -462,74 +506,64 @@
     .ttl-badge {
       font-size: 10px;
       font-weight: 700;
-      background: #fef2f2;
-      color: #dc2626;
-      border: 1px solid #fecaca;
+      background: #f4f4f4;
+      color: #6e6e78;
+      border: 1px solid #e1e3e8;
       border-radius: 4px;
       padding: 2px 8px;
+    }
+
+    .jwt-claim {
+      background: #e8f0fe;
+      color: #0061F2;
+      border-radius: 2px;
+      padding: 0 2px;
+      font-style: normal;
     }
 
     .token-timestamps {
       display: flex;
       gap: 28px;
+      border-top: 1px solid #e1e3e8;
+      padding-top: 14px;
     }
 
     .token-timestamps .evidence-field { flex: 1; }
 
-    .token-display {
+    .token-panel {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    .token-panel-left {
+      flex: 0 0 42%;
       display: flex;
       flex-direction: column;
-      gap: 8px;
-    }
-
-    .token-preview {
-      font-size: 12px;
-      color: #334155;
-      word-break: break-all;
-      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
-    }
-
-    .token-buttons {
-      display: flex;
-      gap: 8px;
-    }
-
-    .btn-toggle {
-      font-family: inherit;
-      font-size: 11px;
-      font-weight: 700;
-      cursor: pointer;
-      padding: 5px 12px;
-      border-radius: 5px;
-      border: 1px solid #cbd5e1;
-      background: #f8fafc;
-      color: #334155;
-      transition: background 0.15s ease, color 0.15s ease;
-    }
-
-    .btn-toggle:hover {
-      background: #e2e8f0;
-      color: #0f172a;
-    }
-
-    .token-full {
-      display: none;
-      font-size: 11px;
-      color: #0f172a;
-      word-break: break-all;
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 6px;
-      padding: 10px 12px;
-      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
-    }
-
-    .token-decoded {
-      display: none;
       gap: 12px;
     }
 
-    .token-decoded.visible { display: flex; }
+    .token-panel-right {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .token-full {
+      font-size: 11px;
+      color: #1d1d21;
+      word-break: break-all;
+      overflow-wrap: break-word;
+      max-width: 100%;
+      background: #f4f4f4;
+      border: 1px solid #e1e3e8;
+      border-radius: 6px;
+      padding: 10px 12px;
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      max-height: 100px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+    }
 
     .decoded-block {
       flex: 1;
@@ -541,16 +575,16 @@
     .decoded-block-label {
       font-size: 10px;
       font-weight: 700;
-      letter-spacing: 1px;
+      letter-spacing: 1.5px;
       text-transform: uppercase;
-      color: #64748b;
+      color: #6e6e78;
     }
 
     .decoded-pre {
       font-size: 11px;
-      color: #0f172a;
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
+      color: #1d1d21;
+      background: #f4f4f4;
+      border: 1px solid #e1e3e8;
       border-radius: 6px;
       padding: 10px 12px;
       white-space: pre-wrap;
@@ -562,29 +596,82 @@
 
     .ssh-command-block {
       font-size: 11px;
-      color: #0f172a;
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
+      color: #1d1d21;
+      background: #f4f4f4;
+      border: 1px solid #e1e3e8;
       border-radius: 6px;
       padding: 10px 12px;
       font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
     }
 
+    /* ── Info Tooltips ───────────────────────────────────────────── */
+
+    .info-icon-wrapper {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .info-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #e1e3e8;
+      color: #6e6e78;
+      font-size: 10px;
+      font-weight: 700;
+      cursor: default;
+      margin-left: 8px;
+      flex-shrink: 0;
+      font-style: normal;
+      line-height: 1;
+      user-select: none;
+    }
+
+    .info-icon:hover { background: #0061F2; color: #ffffff; }
+
+    .info-tooltip {
+      display: none;
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      width: 320px;
+      background: #1d1d21;
+      color: #f4f4f4;
+      font-size: 12px;
+      font-weight: 400;
+      line-height: 1.6;
+      padding: 12px 16px;
+      border-radius: 8px;
+      z-index: 100;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+      pointer-events: none;
+      letter-spacing: 0;
+    }
+
+    .info-tooltip strong { color: #ffffff; font-weight: 700; }
+
+    .info-icon-wrapper:hover .info-tooltip { display: block; }
+
     /* ── Footer ─────────────────────────────────────────────────── */
 
     footer {
       margin-top: auto;
-      border-top: 1px solid #1a2744;
+      background: #ffffff;
+      border-top: 1px solid #e1e3e8;
       padding: 12px 40px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       font-size: 11px;
-      color: #334155;
+      color: #6e6e78;
     }
 
     footer .footer-center {
-      color: #475569;
+      color: #6e6e78;
       letter-spacing: 0.3px;
     }
 
@@ -605,6 +692,19 @@
 </head>
 <body>
 
+<!-- OPA Top Navigation Bar -->
+<nav class="opa-nav">
+  <span class="opa-nav-brand">okta</span>
+  <span class="opa-nav-sep"></span>
+  <span class="opa-nav-product">Privileged Access</span>
+  <span class="opa-nav-pipe">|</span>
+  <span class="opa-nav-title">Workload Identity for Automation</span>
+  <div class="opa-nav-live">
+    <span class="live-dot"></span>
+    Live · 3s
+  </div>
+</nav>
+
 <!-- Row 1: Hero Banner -->
 <div class="hero">
   <div class="hero-left">
@@ -620,13 +720,9 @@
 
   <div class="hero-right">
     <div class="cred-counter" id="cred-count">0</div>
-    <div class="cred-label">Standing Credentials Used</div>
+    <div class="cred-label">Deployments</div>
   </div>
 
-  <div class="hero-live">
-    <span class="live-dot"></span>
-    Live · refreshes every 3s
-  </div>
 </div>
 
 <!-- Row 2: Security Flow Visualization -->
@@ -687,42 +783,6 @@
 
 </div>
 
-<!-- Row 4: Security Properties Strip -->
-<div class="badges-row">
-
-  <div class="badge inactive" id="badge-oidc">
-    <span class="badge-icon">🔐</span>
-    <div class="badge-text">
-      <span class="badge-title">OIDC Token Validated</span>
-      <span class="badge-sub">Platform identity confirmed</span>
-    </div>
-  </div>
-
-  <div class="badge inactive" id="badge-cert">
-    <span class="badge-icon">📜</span>
-    <div class="badge-text">
-      <span class="badge-title">Ephemeral SSH Cert Issued</span>
-      <span class="badge-sub">Short-lived · auto-expiring</span>
-    </div>
-  </div>
-
-  <div class="badge inactive" id="badge-jit">
-    <span class="badge-icon">⚡</span>
-    <div class="badge-text">
-      <span class="badge-title">JIT Account Created</span>
-      <span class="badge-sub">Zero standing privilege</span>
-    </div>
-  </div>
-
-  <div class="badge inactive" id="badge-teardown">
-    <span class="badge-icon">🔒</span>
-    <div class="badge-text">
-      <span class="badge-title">Session Closed · Cert Expired</span>
-      <span class="badge-sub">Account torn down</span>
-    </div>
-  </div>
-
-</div>
 
 <!-- ── Evidence: Deployment Details ─────────────────────────────── -->
 <div class="evidence-section" id="section-deployment">
@@ -788,11 +848,14 @@
 
 <!-- ── Evidence: Step 1 — GitHub OIDC Token ─────────────────────── -->
 <div class="evidence-section" id="section-oidc">
-  <div class="evidence-section-title">Authentication Evidence</div>
   <div class="evidence-card-full">
     <div class="evidence-card-header">
       <div class="evidence-step-label">
         <span class="evidence-step-num">1</span>GitHub OIDC Token
+        <span class="info-icon-wrapper">
+          <span class="info-icon">i</span>
+          <div class="info-tooltip">The CI/CD runner requests a signed JWT directly from GitHub's OIDC endpoint — no stored secret needed. This token cryptographically proves the job's identity: which repository, branch, and workflow triggered it. OPA validates this token against the Workload Connection's JWKS URL and required claims before issuing any access.</div>
+        </span>
       </div>
     </div>
     <div class="token-timestamps">
@@ -809,18 +872,18 @@
         <div class="evidence-value" id="ev-oidc-exp">—</div>
       </div>
     </div>
-    <div class="token-display">
-      <div class="token-preview" id="oidc-preview">—</div>
-      <div class="token-buttons">
-        <button class="btn-toggle" id="btn-oidc-full" onclick="toggleFull('oidc')">Show Full Token</button>
-        <button class="btn-toggle" id="btn-oidc-decode" onclick="toggleDecode('oidc')">Decode JWT</button>
-      </div>
-      <pre class="token-full" id="oidc-full"></pre>
-      <div class="token-decoded" id="oidc-decoded">
+    <div class="token-panel">
+      <div class="token-panel-left">
+        <div class="decoded-block">
+          <div class="decoded-block-label">Token</div>
+          <pre class="token-full" id="oidc-full"></pre>
+        </div>
         <div class="decoded-block">
           <div class="decoded-block-label">Header</div>
           <pre class="decoded-pre" id="oidc-header-pre"></pre>
         </div>
+      </div>
+      <div class="token-panel-right">
         <div class="decoded-block">
           <div class="decoded-block-label">Payload</div>
           <pre class="decoded-pre" id="oidc-payload-pre"></pre>
@@ -836,8 +899,12 @@
     <div class="evidence-card-header">
       <div class="evidence-step-label">
         <span class="evidence-step-num">2</span>OPA Access Token
+        <span class="info-icon-wrapper">
+          <span class="info-icon">i</span>
+          <div class="info-tooltip">After validating the GitHub OIDC token, OPA issues its own short-lived access token (default TTL: 300s). This token represents the workload's authenticated identity within OPA and is used to request brokered SSH access. It cannot be refreshed — the workload must re-authenticate from scratch when it expires.</div>
+        </span>
       </div>
-      <span class="ttl-badge">300s · Expired</span>
+      <span class="ttl-badge" id="opa-ttl-badge" style="display:none"></span>
     </div>
     <div class="token-timestamps">
       <div class="evidence-field">
@@ -853,18 +920,18 @@
         <div class="evidence-value" id="ev-opa-exp">—</div>
       </div>
     </div>
-    <div class="token-display">
-      <div class="token-preview" id="opa-preview">—</div>
-      <div class="token-buttons">
-        <button class="btn-toggle" id="btn-opa-full" onclick="toggleFull('opa')">Show Full Token</button>
-        <button class="btn-toggle" id="btn-opa-decode" onclick="toggleDecode('opa')">Decode JWT</button>
-      </div>
-      <pre class="token-full" id="opa-full"></pre>
-      <div class="token-decoded" id="opa-decoded">
+    <div class="token-panel">
+      <div class="token-panel-left">
+        <div class="decoded-block">
+          <div class="decoded-block-label">Token</div>
+          <pre class="token-full" id="opa-full"></pre>
+        </div>
         <div class="decoded-block">
           <div class="decoded-block-label">Header</div>
           <pre class="decoded-pre" id="opa-header-pre"></pre>
         </div>
+      </div>
+      <div class="token-panel-right">
         <div class="decoded-block">
           <div class="decoded-block-label">Payload</div>
           <pre class="decoded-pre" id="opa-payload-pre"></pre>
@@ -880,9 +947,13 @@
     <div class="evidence-card-header">
       <div class="evidence-step-label">
         <span class="evidence-step-num">3</span>SSH Connection
+        <span class="info-icon-wrapper">
+          <span class="info-icon">i</span>
+          <div class="info-tooltip">Using the OPA access token, the <strong>sft</strong> CLI requests a just-in-time SSH certificate and ephemeral account on the target server. The account (<strong>wl_</strong> prefixed) is created at job start and torn down immediately on completion. No standing SSH keys or persistent accounts are used at any point.</div>
+        </span>
       </div>
     </div>
-    <div class="evidence-grid">
+    <div class="token-timestamps">
       <div class="evidence-field">
         <div class="evidence-label">Target Host</div>
         <div class="evidence-value" id="ev-ssh-host">—</div>
@@ -901,7 +972,6 @@
 
 <!-- Footer -->
 <footer>
-  <span id="footer-connection">OPA Connection: —</span>
   <span class="footer-center"><span class="okta-badge">OPA</span>Powered by Okta Privileged Access · Workload Identity for Automation</span>
   <span id="footer-count">Deployments: 0</span>
 </footer>
@@ -934,30 +1004,6 @@
     } catch(e) { return null; }
   }
 
-  // Per-token toggle state
-  const _tokenState = {
-    oidc: { fullVisible: false, decodeVisible: false },
-    opa:  { fullVisible: false, decodeVisible: false }
-  };
-
-  function toggleFull(which) {
-    const st = _tokenState[which];
-    st.fullVisible = !st.fullVisible;
-    const el = document.getElementById(which + '-full');
-    const btn = document.getElementById('btn-' + which + '-full');
-    el.style.display = st.fullVisible ? 'block' : 'none';
-    btn.textContent = st.fullVisible ? 'Hide Token' : 'Show Full Token';
-  }
-
-  function toggleDecode(which) {
-    const st = _tokenState[which];
-    st.decodeVisible = !st.decodeVisible;
-    const el = document.getElementById(which + '-decoded');
-    const btn = document.getElementById('btn-' + which + '-decode');
-    el.classList.toggle('visible', st.decodeVisible);
-    btn.textContent = st.decodeVisible ? 'Hide Decoded' : 'Decode JWT';
-  }
-
   function setFlowActive(deployed) {
     const nodes = ['flow-github', 'flow-opa', 'flow-server'];
     const arrows = ['flow-arrow-1', 'flow-arrow-2'];
@@ -986,16 +1032,42 @@
     if (el) el.classList.toggle('visible', visible);
   }
 
+  const OIDC_HIGHLIGHT_KEYS = new Set([
+    'iss', 'sub', 'aud', 'repository', 'ref', 'workflow', 'workflow_ref', 'job_workflow_ref'
+  ]);
+  const OPA_HIGHLIGHT_KEYS = new Set([
+    'iss', 'sub', 'exp', 'iat', 'team', 'project', 'groups'
+  ]);
+
+  function escapeHTML(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function renderHighlightedJSON(obj, highlightKeys) {
+    const lines = JSON.stringify(obj, null, 2).split('\n');
+    return lines.map(line => {
+      // Match lines like:  "key": value
+      const m = line.match(/^(\s*)"([^"]+)"(\s*:\s*)(.*)$/);
+      if (m && highlightKeys.has(m[2])) {
+        return m[1] + '"<mark class="jwt-claim">' + escapeHTML(m[2]) + '</mark>"' + m[3] + escapeHTML(m[4]);
+      }
+      return escapeHTML(line);
+    }).join('\n');
+  }
+
   function renderState(s) {
     // Customer name
     document.getElementById('customer-name').textContent = fmt(s.customer, 'Demo Customer');
 
-    // Credential counter
-    const cred = s.standing_credentials_used || 0;
+    // Deployment counter — mirrors workflow run number
+    const deployCount = s.workflow_run_number || 0;
     const credEl = document.getElementById('cred-count');
-    credEl.textContent = cred;
-    credEl.className = 'cred-counter' +
-      (cred > 0 ? ' nonzero' : (s.status === 'success' ? ' deployed' : ''));
+    credEl.textContent = deployCount;
+    credEl.className = 'cred-counter' + (s.status === 'success' ? ' deployed' : '');
 
     // Hero status
     const statusEl = document.getElementById('deploy-status');
@@ -1041,16 +1113,9 @@
       document.getElementById(id).className = 'card' + (deployed ? ' active' : '');
     });
 
-    // Security badges
-    ['badge-oidc', 'badge-cert', 'badge-jit', 'badge-teardown'].forEach(id => {
-      document.getElementById(id).className = 'badge ' + (deployed ? 'active' : 'inactive');
-    });
-
     // Footer
-    document.getElementById('footer-connection').textContent =
-      'OPA Connection: ' + fmt(s.opa_connection);
     document.getElementById('footer-count').textContent =
-      'Deployments: ' + (s.deployment_count || 0);
+      'Run #' + (s.workflow_run_number || 0);
 
     // ── Evidence sections — only show after successful deploy ──────
     const showEvidence = deployed;
@@ -1093,12 +1158,11 @@
     document.getElementById('ev-oidc-exp').textContent = epochToHuman(s.oidc_token_exp);
 
     if (s.oidc_token) {
-      document.getElementById('oidc-preview').textContent = s.oidc_token.slice(0, 60) + '…';
       document.getElementById('oidc-full').textContent = s.oidc_token;
       const dec = decodeJWT(s.oidc_token);
       if (dec) {
         document.getElementById('oidc-header-pre').textContent = JSON.stringify(dec.header, null, 2);
-        document.getElementById('oidc-payload-pre').textContent = JSON.stringify(dec.payload, null, 2);
+        document.getElementById('oidc-payload-pre').innerHTML = renderHighlightedJSON(dec.payload, OIDC_HIGHLIGHT_KEYS);
       }
     }
 
@@ -1107,13 +1171,22 @@
     document.getElementById('ev-opa-nbf').textContent = epochToHuman(s.opa_token_iat);
     document.getElementById('ev-opa-exp').textContent = epochToHuman(s.opa_token_exp);
 
+    // Dynamic TTL badge
+    const ttlBadge = document.getElementById('opa-ttl-badge');
+    if (s.opa_token_iat && s.opa_token_exp) {
+      const ttl = s.opa_token_exp - s.opa_token_iat;
+      ttlBadge.textContent = 'TTL: ' + ttl + 's';
+      ttlBadge.style.display = '';
+    } else {
+      ttlBadge.style.display = 'none';
+    }
+
     if (s.opa_token) {
-      document.getElementById('opa-preview').textContent = s.opa_token.slice(0, 60) + '…';
       document.getElementById('opa-full').textContent = s.opa_token;
       const dec = decodeJWT(s.opa_token);
       if (dec) {
         document.getElementById('opa-header-pre').textContent = JSON.stringify(dec.header, null, 2);
-        document.getElementById('opa-payload-pre').textContent = JSON.stringify(dec.payload, null, 2);
+        document.getElementById('opa-payload-pre').innerHTML = renderHighlightedJSON(dec.payload, OPA_HIGHLIGHT_KEYS);
       }
     }
 
