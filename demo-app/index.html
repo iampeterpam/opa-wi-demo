@@ -1195,7 +1195,7 @@
     document.getElementById('ev-ssh-executed-at').textContent = fmt(s.runner_executed_at);
     document.getElementById('ev-ssh-command').textContent =
       'sft ssh --team farley --workload-role github_actions ' + fmt(s.ssh_target_host, 'target-server-01') + '\n' +
-      '  echo "${PAYLOAD_B64}" | base64 -d | tee /var/www/demo-app/state.json > /dev/null';
+      '  echo "${PAYLOAD_B64}" | base64 -d | sudo tee /var/www/demo-app/state.json > /dev/null';
   }
 
   async function fetchState() {
