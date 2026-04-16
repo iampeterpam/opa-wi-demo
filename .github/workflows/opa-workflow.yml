@@ -85,18 +85,15 @@ jobs:
         env:
           GITHUB_OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
         run: |
-          # Probe correct OPA REST API paths (from sft binary: /connections/workloads)
-          echo "=== OPA API probes (correct paths) ==="
-          echo "--- GET /v1/teams/farley/connections/workloads ---"
-          curl -s "https://pfarley.pam.oktapreview.com/v1/teams/farley/connections/workloads" \
-            -w "\nHTTP: %{http_code}" || true
-          echo ""
-          echo "--- GET /.well-known/openid-configuration ---"
-          curl -s "https://pfarley.pam.oktapreview.com/.well-known/openid-configuration" \
-            -w "\nHTTP: %{http_code}" || true
+          # Direct curl to OPA issue_token endpoint — bypass sft to see raw response
+          echo "=== Direct curl to OPA issue_token endpoint ==="
+          curl -s -w "\nHTTP: %{http_code}" \
+            -X POST "https://pfarley.pam.oktapreview.com/v1/teams/farley/workloads/github-actions-prod/issue_token" \
+            -H "Content-Type: application/json" \
+            -d "{\"credential_type\":\"jwt\",\"jwt\":\"${GITHUB_OIDC_TOKEN}\"}" || true
           echo ""
 
-          echo "=== sft workload authenticate (with --connection) ==="
+          echo "=== sft workload authenticate ==="
           SFT_DEBUG=1 sft workload authenticate \
             --team farley \
             --connection github-actions-prod \
