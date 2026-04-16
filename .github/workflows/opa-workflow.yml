@@ -39,17 +39,13 @@ jobs:
       - name: Configure sft
         run: |
           # Write to the path sft actually reads (found via SFT_DEBUG=1)
+          # Format is TOML (key = "value"), not YAML
           mkdir -p ~/.config/ScaleFT
-          cat > ~/.config/ScaleFT/sft.conf <<EOF
-          address: https://pfarley.pam.oktapreview.com
-          team: farley
-          EOF
+          printf 'address = "https://pfarley.pam.oktapreview.com"\nteam = "farley"\n' > ~/.config/ScaleFT/sft.conf
+          echo "=== sft.conf contents ==="
+          cat ~/.config/ScaleFT/sft.conf
           echo "OPA_ADDR=https://pfarley.pam.oktapreview.com" >> $GITHUB_ENV
           echo "SFT_TEAM=farley" >> $GITHUB_ENV
-
-          # Show what env vars the sft binary recognizes for address/URL
-          echo "=== sft env vars for address/gateway ==="
-          strings $(which sft) | grep -iE '^(SFT_|OPA_|SCALEFT_)' | sort -u || true
 
       # ── Step 3: Request GitHub OIDC JWT ─────────────────────────────────
       - name: Request GitHub OIDC Token
