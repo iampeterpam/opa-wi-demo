@@ -67,28 +67,20 @@ jobs:
         env:
           GITHUB_OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
         run: |
-          echo "=== sft workload authenticate --help ==="
-          sft workload authenticate --help 2>&1 || true
-
-          echo "=== direct OPA API probe (JWT as Bearer, connectionName in body) ==="
-          curl -s -w "\nHTTP_STATUS:%{http_code}" -X POST \
-            "https://pfarley.pam.oktapreview.com/v1/teams/farley/connections/workloads" \
-            -H "Content-Type: application/json" \
-            -H "Authorization: Bearer ${GITHUB_OIDC_TOKEN}" \
-            -d "{\"connectionName\":\"github-actions-prod\"}" || true
-
-          echo ""
-          echo "=== direct OPA API probe (JWT as Bearer, no body) ==="
-          curl -s -w "\nHTTP_STATUS:%{http_code}" -X GET \
-            "https://pfarley.pam.oktapreview.com/v1/teams/farley/connections/workloads/github-actions-prod/token" \
-            -H "Authorization: Bearer ${GITHUB_OIDC_TOKEN}" || true
-
-          echo ""
-          echo "=== authenticate ==="
-          OPA_TOKEN=$(sft workload authenticate \
+          echo "=== authenticate (SFT_DEBUG=1) ==="
+          SFT_DEBUG=1 sft workload authenticate \
             --team farley \
             --connection github-actions-prod \
-            --jwt-env GITHUB_OIDC_TOKEN)
+            --jwt-env GITHUB_OIDC_TOKEN > /tmp/sft_out.txt 2>/tmp/sft_debug.txt || true
+          echo "--- stdout ---"
+          cat /tmp/sft_out.txt
+          echo "--- stderr/debug ---"
+          cat /tmp/sft_debug.txt
+          echo "--- exit: done ---"
+          OPA_TOKEN=$(cat /tmp/sft_out.txt | tr -d '\n\r')
+          echo "::add-mask::$OPA_TOKEN"
+          echo "OPA_TOKEN=$OPA_TOKEN" >> $GITHUB_ENV
+          echo "✅ OPA token issued (TTL: 300s)"
           OPA_TOKEN=$(echo "$OPA_TOKEN" | tr -d '\n\r')
           echo "::add-mask::$OPA_TOKEN"
           echo "OPA_TOKEN=$OPA_TOKEN" >> $GITHUB_ENV
