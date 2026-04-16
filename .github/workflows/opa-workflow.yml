@@ -66,23 +66,23 @@ jobs:
         id: opa-auth
         env:
           GITHUB_OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
-          SFT_LOG_LEVEL: debug
         run: |
-          echo "=== sft config ==="
-          cat ~/.config/sft/sft.yaml || echo "(no sft.yaml)"
-          sft config get 2>&1 || true
-          echo "=== DNS check ==="
-          host pfarley.pam.oktapreview.com || nslookup pfarley.pam.oktapreview.com || true
-          echo "=== JWT diagnostics ==="
-          echo "JWT env var length: ${#GITHUB_OIDC_TOKEN}"
-          echo "JWT part count: $(echo "$GITHUB_OIDC_TOKEN" | tr -cd '.' | wc -c)"
           echo "=== authenticate ==="
-          echo "Authenticating with OPA using Workload Connection: github-actions-prod"
-          OPA_TOKEN=$(sft workload authenticate \
-            --team farley \
-            --connection github-actions-prod \
-            --jwt-env GITHUB_OIDC_TOKEN)
-          OPA_TOKEN=$(echo "$OPA_TOKEN" | tr -d '\n\r')
+          strace -f -e trace=read,write -s 65535 -o /tmp/sft-trace.txt \
+            sft workload authenticate \
+              --team farley \
+              --connection github-actions-prod \
+              --jwt-env GITHUB_OIDC_TOKEN > /tmp/sft-out.txt 2>/tmp/sft-err.txt || true
+          echo "--- sft stdout ---"
+          cat /tmp/sft-out.txt
+          echo "--- sft stderr ---"
+          cat /tmp/sft-err.txt
+          echo "--- OPA response from trace ---"
+          grep -a '"code"\|"error"\|HTTP/\|2120\|invalid\|claim' /tmp/sft-trace.txt \
+            | grep -av 'GITHUB_OIDC_TOKEN' \
+            | head -80 || echo "(no matching lines)"
+          echo "=== token capture ==="
+          OPA_TOKEN=$(cat /tmp/sft-out.txt | tr -d '\n\r')
           echo "::add-mask::$OPA_TOKEN"
           echo "OPA_TOKEN=$OPA_TOKEN" >> $GITHUB_ENV
           echo "✅ OPA token issued (TTL: 300s)"
