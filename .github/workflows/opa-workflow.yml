@@ -38,11 +38,18 @@ jobs:
       # ── Step 2: Configure OPA gateway ───────────────────────────────────
       - name: Configure sft
         run: |
-          mkdir -p ~/.config/sft
-          cat > ~/.config/sft/sft.yaml <<EOF
+          # Write to the path sft actually reads (found via SFT_DEBUG=1)
+          mkdir -p ~/.config/ScaleFT
+          cat > ~/.config/ScaleFT/sft.conf <<EOF
           address: https://pfarley.pam.oktapreview.com
+          team: farley
           EOF
           echo "OPA_ADDR=https://pfarley.pam.oktapreview.com" >> $GITHUB_ENV
+          echo "SFT_TEAM=farley" >> $GITHUB_ENV
+
+          # Show what env vars the sft binary recognizes for address/URL
+          echo "=== sft env vars for address/gateway ==="
+          strings $(which sft) | grep -iE '^(SFT_|OPA_|SCALEFT_)' | sort -u || true
 
       # ── Step 3: Request GitHub OIDC JWT ─────────────────────────────────
       - name: Request GitHub OIDC Token
