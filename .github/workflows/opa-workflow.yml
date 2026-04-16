@@ -128,7 +128,7 @@ jobs:
           echo "OPA_TOKEN length: ${#OPA_TOKEN}"
           echo "OPA_TOKEN prefix: ${OPA_TOKEN:0:20}..."
 
-          sft ssh --team farley target-server-01 <<SSHEOF
+          sft ssh --team farley --workload-role github_actions target-server-01 <<SSHEOF
           echo "${PAYLOAD_B64}" | base64 -d | sudo tee /var/www/demo-app/state.json > /dev/null
           echo 'state.json updated'
           SSHEOF
