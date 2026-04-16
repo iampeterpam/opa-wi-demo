@@ -71,21 +71,19 @@ jobs:
         env:
           GITHUB_OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
         run: |
-          echo "=== authenticate (SFT_DEBUG=1) ==="
-          SFT_DEBUG=1 sft workload authenticate \
+          # GODEBUG=http2debug=2 dumps raw HTTP/2 frames to stderr,
+          # revealing the exact :path, headers, and response body OPA returns.
+          echo "=== authenticate (GODEBUG=http2debug=2, SFT_DEBUG=1) ==="
+          GODEBUG=http2debug=2 SFT_DEBUG=1 sft workload authenticate \
             --team farley \
             --connection github-actions-prod \
             --jwt-env GITHUB_OIDC_TOKEN > /tmp/sft_out.txt 2>/tmp/sft_debug.txt || true
           echo "--- stdout ---"
           cat /tmp/sft_out.txt
-          echo "--- stderr/debug ---"
-          cat /tmp/sft_debug.txt
+          echo "--- stderr/debug (first 200 lines) ---"
+          head -200 /tmp/sft_debug.txt
           echo "--- exit: done ---"
           OPA_TOKEN=$(cat /tmp/sft_out.txt | tr -d '\n\r')
-          echo "::add-mask::$OPA_TOKEN"
-          echo "OPA_TOKEN=$OPA_TOKEN" >> $GITHUB_ENV
-          echo "✅ OPA token issued (TTL: 300s)"
-          OPA_TOKEN=$(echo "$OPA_TOKEN" | tr -d '\n\r')
           echo "::add-mask::$OPA_TOKEN"
           echo "OPA_TOKEN=$OPA_TOKEN" >> $GITHUB_ENV
           echo "✅ OPA token issued (TTL: 300s)"
