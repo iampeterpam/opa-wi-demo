@@ -78,10 +78,14 @@ jobs:
         env:
           GITHUB_OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
         run: |
-          sft workload authenticate \
+          if ! sft workload authenticate \
             --team farley \
             --connection github-actions-prod \
-            --jwt-env GITHUB_OIDC_TOKEN > /tmp/sft_out.txt 2>&1
+            --jwt-env GITHUB_OIDC_TOKEN > /tmp/sft_out.txt 2>/tmp/sft_err.txt; then
+            echo "=== sft error ==="
+            cat /tmp/sft_err.txt
+            exit 1
+          fi
           OPA_TOKEN=$(cat /tmp/sft_out.txt | tr -d '\n\r')
           echo "::add-mask::$OPA_TOKEN"
           echo "OPA_TOKEN=$OPA_TOKEN" >> $GITHUB_ENV
