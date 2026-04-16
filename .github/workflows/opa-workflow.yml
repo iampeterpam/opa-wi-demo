@@ -125,14 +125,8 @@ jobs:
           JSON
           )
 
-          echo "OPA_TOKEN length: ${#OPA_TOKEN}"
-          echo "OPA_TOKEN prefix: ${OPA_TOKEN:0:20}..."
-
           sft ssh --team farley --workload-role github_actions target-server-01 <<SSHEOF
-          echo "whoami: \$(whoami)"
-          echo "ls -la /var/www/demo-app/:"
-          ls -la /var/www/demo-app/
-          echo "${PAYLOAD_B64}" | base64 -d | tee /var/www/demo-app/state.json
+          echo "${PAYLOAD_B64}" | base64 -d | tee /var/www/demo-app/state.json > /dev/null
           echo 'state.json updated'
           SSHEOF
 
@@ -147,7 +141,7 @@ jobs:
         run: |
           DUR=${SSH_DURATION:-0}
 
-          sft ssh --team farley target-server-01 <<SSHEOF || echo "Duration patch skipped (token may have expired — that's fine)"
+          sft ssh --team farley --workload-role github_actions target-server-01 <<SSHEOF || echo "Duration patch skipped (token may have expired — that's fine)"
           CURRENT=\$(cat /var/www/demo-app/state.json)
           printf '%s\n' "\$CURRENT" | jq --argjson dur ${DUR} '.session_duration_seconds = \$dur' | tee /var/www/demo-app/state.json > /dev/null
           SSHEOF
