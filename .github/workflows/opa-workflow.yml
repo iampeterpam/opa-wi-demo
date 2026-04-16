@@ -71,8 +71,8 @@ jobs:
           OPA_TOKEN=$(sft workload authenticate \
             --team farley \
             --connection github-actions-prod \
-            --role-hint github_actions \
-            --jwt-env GITHUB_OIDC_TOKEN | tr -d '\n\r')
+            --jwt-env GITHUB_OIDC_TOKEN)
+          OPA_TOKEN=$(echo "$OPA_TOKEN" | tr -d '\n\r')
           echo "::add-mask::$OPA_TOKEN"
           echo "OPA_TOKEN=$OPA_TOKEN" >> $GITHUB_ENV
           echo "✅ OPA token issued (TTL: 300s)"
