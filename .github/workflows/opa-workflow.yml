@@ -85,7 +85,21 @@ jobs:
         env:
           GITHUB_OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
         run: |
-          echo "=== sft workload authenticate ==="
+          # Probe OPA REST API for connection metadata (no auth needed for GET if public)
+          echo "=== OPA API probes (GET — no auth) ==="
+          echo "--- GET /v1/teams/farley/workloads ---"
+          curl -sv "https://pfarley.pam.oktapreview.com/v1/teams/farley/workloads" 2>&1 | tail -20 || true
+          echo "--- GET /v1/teams/farley/workloads/github-actions-prod ---"
+          curl -sv "https://pfarley.pam.oktapreview.com/v1/teams/farley/workloads/github-actions-prod" 2>&1 | tail -15 || true
+
+          # Run sft WITHOUT --connection to see if we get a different error
+          echo "=== sft workload authenticate (no --connection, to see alt error) ==="
+          SFT_DEBUG=1 sft workload authenticate \
+            --team farley \
+            --jwt-env GITHUB_OIDC_TOKEN > /tmp/sft_noconn.txt 2>&1 || true
+          cat /tmp/sft_noconn.txt | tail -5
+
+          echo "=== sft workload authenticate (with --connection) ==="
           SFT_DEBUG=1 sft workload authenticate \
             --team farley \
             --connection github-actions-prod \
@@ -95,15 +109,6 @@ jobs:
           echo "--- stderr/debug ---"
           cat /tmp/sft_debug.txt
           echo "--- exit: done ---"
-
-          # Direct curl to OPA issue_token endpoint to get unfiltered response
-          echo "=== curl probe: POST /v1/teams/farley/workloads/github-actions-prod/issue_token ==="
-          curl -s -X POST \
-            "https://pfarley.pam.oktapreview.com/v1/teams/farley/workloads/github-actions-prod/issue_token" \
-            -H "Content-Type: application/json" \
-            -H "Accept: application/json" \
-            -d "{\"credential_type\":\"jwt\",\"jwt\":\"$GITHUB_OIDC_TOKEN\"}" \
-            -w "\nHTTP status: %{http_code}\n" || true
 
           OPA_TOKEN=$(cat /tmp/sft_out.txt | tr -d '\n\r')
           echo "::add-mask::$OPA_TOKEN"
