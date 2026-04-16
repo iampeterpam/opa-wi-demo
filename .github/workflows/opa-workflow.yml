@@ -117,7 +117,7 @@ jobs:
           JSON
           )
 
-          sft ssh --team farley target-server-01 <<SSHEOF
+          sft ssh --team farley --token "$OPA_TOKEN" target-server-01 <<SSHEOF
           echo "${PAYLOAD_B64}" | base64 -d | sudo tee /var/www/demo-app/state.json > /dev/null
           echo 'state.json updated'
           SSHEOF
@@ -133,7 +133,7 @@ jobs:
         run: |
           DUR=${SSH_DURATION:-0}
 
-          sft ssh --team farley target-server-01 <<SSHEOF || echo "Duration patch skipped (token may have expired — that's fine)"
+          sft ssh --team farley --token "$OPA_TOKEN" target-server-01 <<SSHEOF || echo "Duration patch skipped (token may have expired — that's fine)"
           CURRENT=\$(cat /var/www/demo-app/state.json)
           printf '%s\n' "\$CURRENT" | jq --argjson dur ${DUR} '.session_duration_seconds = \$dur' | sudo tee /var/www/demo-app/state.json > /dev/null
           SSHEOF
