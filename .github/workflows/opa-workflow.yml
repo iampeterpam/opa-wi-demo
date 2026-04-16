@@ -38,12 +38,7 @@ jobs:
       # ── Step 2: Configure OPA gateway ───────────────────────────────────
       - name: Configure sft
         run: |
-          # Write to the path sft actually reads (found via SFT_DEBUG=1)
-          # Format is TOML (key = "value"), not YAML
-          mkdir -p ~/.config/ScaleFT
-          printf 'url = "https://pfarley.pam.oktapreview.com"\nteam = "farley"\n' > ~/.config/ScaleFT/sft.conf
-          echo "=== sft.conf contents ==="
-          cat ~/.config/ScaleFT/sft.conf
+          # OPA_ADDR is the documented env var for the gateway URL (sft.conf key is unknown)
           echo "OPA_ADDR=https://pfarley.pam.oktapreview.com" >> $GITHUB_ENV
           echo "SFT_TEAM=farley" >> $GITHUB_ENV
 
@@ -53,7 +48,7 @@ jobs:
         run: |
           echo "Requesting OIDC token from GitHub..."
           OIDC_TOKEN=$(curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
-            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=farley" | jq -r '.value')
+            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=github-actions-prod" | jq -r '.value')
           echo "=== JWT Claims (pre-mask) ==="
           PAYLOAD=$(echo "$OIDC_TOKEN" | cut -d. -f2)
           MOD=$((${#PAYLOAD} % 4))
