@@ -38,15 +38,8 @@ jobs:
       # ── Step 2: Configure OPA gateway ───────────────────────────────────
       - name: Configure sft
         run: |
-          # OPA_ADDR is the documented env var for the gateway URL (sft.conf key is unknown)
           echo "OPA_ADDR=https://pfarley.pam.oktapreview.com" >> $GITHUB_ENV
           echo "SFT_TEAM=farley" >> $GITHUB_ENV
-
-          # Probe sft binary for API endpoint paths and config key names
-          echo "=== sft API paths (workload/token/authenticate) ==="
-          strings $(which sft) | grep -E '/(v[0-9]|workload|token|authenticate|opa)' | sort -u | head -30 || true
-          echo "=== sft config keys ==="
-          strings $(which sft) | grep -iE '^[a-z][a-z_]{2,20}$' | sort -u | grep -iE '(url|addr|server|host|gateway|team|address)' | head -20 || true
 
       # ── Step 3: Request GitHub OIDC JWT ─────────────────────────────────
       - name: Request GitHub OIDC Token
@@ -54,7 +47,7 @@ jobs:
         run: |
           echo "Requesting OIDC token from GitHub..."
           OIDC_TOKEN=$(curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
-            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=github-actions-prod" | jq -r '.value')
+            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=https://github.com/iampeterpam/opa-wi-demo" | jq -r '.value')
 
           # Decode header BEFORE masking — shows kid and alg
           echo "=== JWT Header (kid / alg) ==="
@@ -85,32 +78,10 @@ jobs:
         env:
           GITHUB_OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
         run: |
-          # Direct curl with verbose headers — look for trace/request IDs in response
-          echo "=== Direct curl (verbose headers) to OPA issue_token ==="
-          curl -si -w "\nHTTP: %{http_code}" \
-            -X POST "https://pfarley.pam.oktapreview.com/v1/teams/farley/workloads/github-actions-prod/issue_token" \
-            -H "Content-Type: application/json" \
-            -d "{\"credential_type\":\"jwt\",\"jwt\":\"${GITHUB_OIDC_TOKEN}\"}" 2>&1 | grep -v "^Authorization:" || true
-          echo ""
-
-          # Try OIDC token as Bearer against connections list — see if workload token grants read access
-          echo "=== GET /v1/teams/farley/connections/workloads (OIDC as Bearer) ==="
-          curl -s -w "\nHTTP: %{http_code}" \
-            -H "Authorization: Bearer ${GITHUB_OIDC_TOKEN}" \
-            "https://pfarley.pam.oktapreview.com/v1/teams/farley/connections/workloads" || true
-          echo ""
-
-          echo "=== sft workload authenticate ==="
-          SFT_DEBUG=1 sft workload authenticate \
+          sft workload authenticate \
             --team farley \
             --connection github-actions-prod \
-            --jwt-env GITHUB_OIDC_TOKEN > /tmp/sft_out.txt 2>/tmp/sft_debug.txt || true
-          echo "--- stdout ---"
-          cat /tmp/sft_out.txt
-          echo "--- stderr/debug ---"
-          cat /tmp/sft_debug.txt
-          echo "--- exit: done ---"
-
+            --jwt-env GITHUB_OIDC_TOKEN > /tmp/sft_out.txt 2>&1
           OPA_TOKEN=$(cat /tmp/sft_out.txt | tr -d '\n\r')
           echo "::add-mask::$OPA_TOKEN"
           echo "OPA_TOKEN=$OPA_TOKEN" >> $GITHUB_ENV
