@@ -85,19 +85,16 @@ jobs:
         env:
           GITHUB_OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
         run: |
-          # Probe OPA REST API for connection metadata (no auth needed for GET if public)
-          echo "=== OPA API probes (GET — no auth) ==="
-          echo "--- GET /v1/teams/farley/workloads ---"
-          curl -sv "https://pfarley.pam.oktapreview.com/v1/teams/farley/workloads" 2>&1 | tail -20 || true
-          echo "--- GET /v1/teams/farley/workloads/github-actions-prod ---"
-          curl -sv "https://pfarley.pam.oktapreview.com/v1/teams/farley/workloads/github-actions-prod" 2>&1 | tail -15 || true
-
-          # Run sft WITHOUT --connection to see if we get a different error
-          echo "=== sft workload authenticate (no --connection, to see alt error) ==="
-          SFT_DEBUG=1 sft workload authenticate \
-            --team farley \
-            --jwt-env GITHUB_OIDC_TOKEN > /tmp/sft_noconn.txt 2>&1 || true
-          cat /tmp/sft_noconn.txt | tail -5
+          # Probe correct OPA REST API paths (from sft binary: /connections/workloads)
+          echo "=== OPA API probes (correct paths) ==="
+          echo "--- GET /v1/teams/farley/connections/workloads ---"
+          curl -s "https://pfarley.pam.oktapreview.com/v1/teams/farley/connections/workloads" \
+            -w "\nHTTP: %{http_code}" || true
+          echo ""
+          echo "--- GET /.well-known/openid-configuration ---"
+          curl -s "https://pfarley.pam.oktapreview.com/.well-known/openid-configuration" \
+            -w "\nHTTP: %{http_code}" || true
+          echo ""
 
           echo "=== sft workload authenticate (with --connection) ==="
           SFT_DEBUG=1 sft workload authenticate \
