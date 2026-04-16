@@ -55,7 +55,7 @@ jobs:
           PAYLOAD=$(echo "$OIDC_TOKEN" | cut -d. -f2)
           MOD=$((${#PAYLOAD} % 4))
           [ $MOD -ne 0 ] && PAYLOAD="${PAYLOAD}$(printf '=%.0s' $(seq 1 $((4 - MOD))))"
-          echo "$PAYLOAD" | base64 -d 2>/dev/null | jq '{iss,aud,sub,repository,repository_owner,ref,ref_type,event_name}' || true
+          echo "$PAYLOAD" | base64 -d 2>/dev/null | jq '.' || true
           echo "=== End JWT Claims ==="
           echo "::add-mask::$OIDC_TOKEN"
           echo "token=$OIDC_TOKEN" >> $GITHUB_OUTPUT
@@ -67,6 +67,9 @@ jobs:
         env:
           GITHUB_OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
         run: |
+          echo "=== sft workload authenticate help ==="
+          sft workload authenticate --help 2>&1 || true
+          echo "=== end help ==="
           echo "Authenticating with OPA using Workload Connection: github-actions-prod"
           OPA_TOKEN=$(sft workload authenticate \
             --team farley \
