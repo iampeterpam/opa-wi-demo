@@ -87,6 +87,14 @@ jobs:
             exit 1
           fi
           OPA_TOKEN=$(cat /tmp/sft_out.txt | tr -d '\n\r')
+
+          # Decode OPA token claims BEFORE masking — shows workload role, team, sub
+          echo "=== OPA Token Claims ==="
+          OPA_PAYLOAD=$(echo "$OPA_TOKEN" | cut -d. -f2)
+          MOD=$((${#OPA_PAYLOAD} % 4))
+          [ $MOD -ne 0 ] && OPA_PAYLOAD="${OPA_PAYLOAD}$(printf '=%.0s' $(seq 1 $((4 - MOD))))"
+          echo "$OPA_PAYLOAD" | base64 -d 2>/dev/null | jq '.' || true
+
           echo "::add-mask::$OPA_TOKEN"
           echo "OPA_TOKEN=$OPA_TOKEN" >> $GITHUB_ENV
           echo "✅ OPA token issued (TTL: 300s)"
