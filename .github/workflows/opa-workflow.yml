@@ -41,7 +41,7 @@ jobs:
           # Write to the path sft actually reads (found via SFT_DEBUG=1)
           # Format is TOML (key = "value"), not YAML
           mkdir -p ~/.config/ScaleFT
-          printf 'address = "https://pfarley.pam.oktapreview.com"\nteam = "farley"\n' > ~/.config/ScaleFT/sft.conf
+          printf 'url = "https://pfarley.pam.oktapreview.com"\nteam = "farley"\n' > ~/.config/ScaleFT/sft.conf
           echo "=== sft.conf contents ==="
           cat ~/.config/ScaleFT/sft.conf
           echo "OPA_ADDR=https://pfarley.pam.oktapreview.com" >> $GITHUB_ENV
