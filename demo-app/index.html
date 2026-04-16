@@ -9,55 +9,123 @@
 
     body {
       font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
-      background: #0a0e1a;
-      color: #e2e8f0;
+      background: #050a14;
+      color: #f1f5f9;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
     }
 
-    header {
-      background: linear-gradient(135deg, #1a1f35 0%, #0f1729 100%);
-      border-bottom: 1px solid #2d3a5a;
-      padding: 20px 32px;
-      display: flex;
+    /* ── Row 1: Hero Banner ─────────────────────────────────────── */
+
+    .hero {
+      background: linear-gradient(135deg, #0d1424 0%, #0a1020 100%);
+      border-bottom: 1px solid #1a2744;
+      padding: 28px 40px 20px;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
       align-items: center;
-      justify-content: space-between;
+      gap: 24px;
     }
 
-    .header-left {
+    .hero-left {
       display: flex;
-      align-items: center;
-      gap: 16px;
+      flex-direction: column;
+      gap: 8px;
     }
 
-    .okta-badge {
-      background: #0061F2;
-      color: white;
-      font-size: 11px;
+    .hero-status-label {
+      font-size: 10px;
       font-weight: 700;
-      letter-spacing: 1px;
-      padding: 4px 10px;
-      border-radius: 4px;
+      letter-spacing: 2px;
       text-transform: uppercase;
+      color: #475569;
     }
 
-    h1 {
-      font-size: 20px;
-      font-weight: 600;
-      color: #f8fafc;
-      letter-spacing: -0.3px;
+    .hero-status-value {
+      font-size: 42px;
+      font-weight: 700;
+      line-height: 1.1;
+      transition: color 0.4s ease;
     }
 
-    h1 span { color: #60a5fa; }
+    .hero-status-value.awaiting {
+      color: #475569;
+      font-size: 32px;
+    }
 
-    .header-right {
+    .hero-status-value.success { color: #22c55e; }
+
+    .hero-timestamp {
+      font-size: 13px;
+      color: #475569;
+      margin-top: 4px;
+    }
+
+    .hero-center {
+      text-align: center;
+    }
+
+    .hero-customer-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #3b82f6;
+      margin-bottom: 6px;
+    }
+
+    .hero-customer-name {
+      font-size: 28px;
+      font-weight: 500;
+      color: #f1f5f9;
+    }
+
+    .hero-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+    }
+
+    .cred-counter {
+      font-size: 88px;
+      font-weight: 700;
+      line-height: 1;
+      color: #f1f5f9;
+      transition: color 0.4s ease, text-shadow 0.4s ease;
+    }
+
+    .cred-counter.deployed {
+      color: #22c55e;
+      text-shadow: 0 0 30px rgba(34, 197, 94, 0.6);
+    }
+
+    .cred-counter.nonzero {
+      color: #ef4444;
+      text-shadow: 0 0 30px rgba(239, 68, 68, 0.6);
+    }
+
+    .cred-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #475569;
+      text-align: right;
+    }
+
+    .hero-live {
+      grid-column: 1 / -1;
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 8px;
+      font-size: 11px;
+      color: #475569;
+      padding-top: 12px;
+      border-top: 1px solid #1a2744;
+      margin-top: 4px;
     }
-
-    .refresh-badge { font-size: 11px; color: #64748b; }
 
     .live-dot {
       display: inline-block;
@@ -66,31 +134,150 @@
       border-radius: 50%;
       background: #22c55e;
       animation: pulse 2s infinite;
-      margin-right: 6px;
+      flex-shrink: 0;
     }
 
     @keyframes pulse {
       0%, 100% { opacity: 1; }
-      50% { opacity: 0.4; }
+      50% { opacity: 0.35; }
     }
 
-    main {
+    /* ── Row 2: Security Flow ───────────────────────────────────── */
+
+    .flow-row {
+      padding: 24px 40px;
+      border-bottom: 1px solid #1a2744;
+    }
+
+    .flow-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #475569;
+      margin-bottom: 16px;
+    }
+
+    .flow-track {
+      display: flex;
+      align-items: center;
+      gap: 0;
+    }
+
+    .flow-node {
       flex: 1;
+      background: #0d1424;
+      border: 1px solid #1a2744;
+      border-radius: 10px;
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      transition: border-color 0.5s ease, box-shadow 0.5s ease, background 0.5s ease;
+    }
+
+    .flow-node.active {
+      border-color: #22c55e44;
+      box-shadow: 0 0 24px rgba(34, 197, 94, 0.35);
+      background: #0d1e16;
+    }
+
+    .flow-node-icon { font-size: 22px; }
+
+    .flow-node-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #94a3b8;
+      transition: color 0.5s ease;
+    }
+
+    .flow-node.active .flow-node-title { color: #f1f5f9; }
+
+    .flow-node-detail {
+      font-size: 11px;
+      color: #334155;
+      transition: color 0.5s ease;
+    }
+
+    .flow-node.active .flow-node-detail { color: #4ade80; }
+
+    .flow-node-check {
+      font-size: 11px;
+      color: #1a2744;
+      font-weight: 700;
+      transition: color 0.5s ease;
+    }
+
+    .flow-node.active .flow-node-check { color: #22c55e; }
+
+    .flow-arrow {
+      flex: 0 0 60px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .flow-arrow-line {
+      width: 100%;
+      height: 2px;
+      background: #1a2744;
+      position: relative;
+      transition: background 0.5s ease;
+    }
+
+    .flow-arrow-line.active { background: #22c55e44; }
+
+    .flow-arrow-line::after {
+      content: '';
+      position: absolute;
+      right: -6px;
+      top: -5px;
+      width: 0;
+      height: 0;
+      border-left: 8px solid #1a2744;
+      border-top: 6px solid transparent;
+      border-bottom: 6px solid transparent;
+      transition: border-left-color 0.5s ease;
+    }
+
+    .flow-arrow-line.active::after { border-left-color: #22c55e44; }
+
+    .flow-arrow-label {
+      font-size: 9px;
+      color: #334155;
+      letter-spacing: 0.5px;
+      text-align: center;
+      transition: color 0.5s ease;
+      margin-top: 6px;
+    }
+
+    .flow-arrow-line.active + .flow-arrow-label { color: #4ade80; }
+
+    /* ── Light card base ────────────────────────────────────────── */
+
+    .data-row {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      grid-template-rows: auto auto auto;
       gap: 16px;
-      padding: 24px 32px;
-      max-width: 1200px;
-      width: 100%;
-      margin: 0 auto;
+      padding: 20px 40px;
+      border-bottom: 1px solid #1a2744;
     }
 
     .card {
-      background: #111827;
-      border: 1px solid #1e2d4a;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
       border-radius: 10px;
       padding: 20px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: border-color 0.4s ease, box-shadow 0.4s ease;
+    }
+
+    .card.active {
+      border-color: #16a34a;
+      box-shadow: 0 0 12px rgba(22, 163, 74, 0.15);
     }
 
     .card-label {
@@ -98,238 +285,750 @@
       font-weight: 700;
       letter-spacing: 1.5px;
       text-transform: uppercase;
-      color: #475569;
-      margin-bottom: 8px;
+      color: #64748b;
     }
 
     .card-value {
-      font-size: 15px;
-      color: #f1f5f9;
+      font-size: 16px;
+      color: #0f172a;
       word-break: break-all;
     }
 
-    .card-hero {
-      grid-column: 1 / -1;
-      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
-      border: 1px solid #3730a3;
+    .card-sub {
+      font-size: 13px;
+      color: #475569;
+    }
+
+    .wl-badge {
+      display: inline-block;
+      background: #1e3a5f;
+      color: #60a5fa;
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+
+    /* ── Row 4: Security Badges ─────────────────────────────────── */
+
+    .badges-row {
+      padding: 20px 40px;
+      border-bottom: 1px solid #1a2744;
+      display: flex;
+      gap: 12px;
+    }
+
+    .badge {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #0d1424;
+      border: 1px solid #1a2744;
+      border-radius: 8px;
+      padding: 14px 18px;
+      font-size: 12px;
+      color: #334155;
+      transition: border-color 0.5s ease, color 0.5s ease, box-shadow 0.5s ease, background 0.5s ease;
+    }
+
+    .badge.active {
+      border-color: #22c55e44;
+      color: #4ade80;
+      background: #0a1a10;
+      box-shadow: 0 0 12px rgba(34, 197, 94, 0.12);
+    }
+
+    .badge-icon { font-size: 18px; flex-shrink: 0; }
+
+    .badge-text {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .badge-title {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+
+    .badge-sub {
+      font-size: 10px;
+      opacity: 0.7;
+    }
+
+    /* ── Evidence Sections ──────────────────────────────────────── */
+
+    .evidence-section {
+      padding: 20px 40px;
+      border-bottom: 1px solid #1a2744;
+      display: none;
+    }
+
+    .evidence-section.visible { display: block; }
+
+    .evidence-section-title {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #475569;
+      margin-bottom: 14px;
+    }
+
+    .evidence-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .evidence-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
       border-radius: 10px;
-      padding: 28px 32px;
+      padding: 18px 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .evidence-field {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .evidence-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #64748b;
+    }
+
+    .evidence-value {
+      font-size: 14px;
+      color: #0f172a;
+      word-break: break-all;
+    }
+
+    .evidence-value a {
+      color: #2563eb;
+      text-decoration: none;
+    }
+
+    .evidence-value a:hover { text-decoration: underline; }
+
+    /* Full-width evidence card (token sections) */
+    .evidence-card-full {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 18px 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .evidence-card-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 12px;
     }
 
-    .hero-status {
+    .evidence-step-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: #0f172a;
+      letter-spacing: 0.3px;
+    }
+
+    .evidence-step-num {
+      display: inline-block;
+      background: #0f172a;
+      color: #f8fafc;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 4px;
+      margin-right: 8px;
+    }
+
+    .ttl-badge {
+      font-size: 10px;
+      font-weight: 700;
+      background: #fef2f2;
+      color: #dc2626;
+      border: 1px solid #fecaca;
+      border-radius: 4px;
+      padding: 2px 8px;
+    }
+
+    .token-timestamps {
+      display: flex;
+      gap: 28px;
+    }
+
+    .token-timestamps .evidence-field { flex: 1; }
+
+    .token-display {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .token-preview {
+      font-size: 12px;
+      color: #334155;
+      word-break: break-all;
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    }
+
+    .token-buttons {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-toggle {
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      padding: 5px 12px;
+      border-radius: 5px;
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      color: #334155;
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+
+    .btn-toggle:hover {
+      background: #e2e8f0;
+      color: #0f172a;
+    }
+
+    .token-full {
+      display: none;
+      font-size: 11px;
+      color: #0f172a;
+      word-break: break-all;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 10px 12px;
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    }
+
+    .token-decoded {
+      display: none;
+      gap: 12px;
+    }
+
+    .token-decoded.visible { display: flex; }
+
+    .decoded-block {
+      flex: 1;
       display: flex;
       flex-direction: column;
       gap: 6px;
     }
 
-    .hero-status-label {
-      font-size: 11px;
+    .decoded-block-label {
+      font-size: 10px;
       font-weight: 700;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      color: #6366f1;
-    }
-
-    .hero-status-value {
-      font-size: 28px;
-      font-weight: 700;
-      color: #f8fafc;
-    }
-
-    .hero-status-value.awaiting { color: #94a3b8; }
-    .hero-status-value.success  { color: #22c55e; }
-
-    .credential-counter { text-align: right; }
-
-    .credential-number {
-      font-size: 64px;
-      font-weight: 800;
-      color: #22c55e;
-      line-height: 1;
-    }
-
-    .credential-number.nonzero { color: #ef4444; }
-
-    .credential-label {
-      font-size: 11px;
-      color: #64748b;
       letter-spacing: 1px;
       text-transform: uppercase;
-      margin-top: 4px;
+      color: #64748b;
     }
 
-    .card-security {
-      grid-column: 1 / -1;
-      background: #111827;
-      border: 1px solid #1e2d4a;
-      border-radius: 10px;
-      padding: 20px 24px;
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    .badge {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background: #0f172a;
-      border: 1px solid #1e2d4a;
+    .decoded-pre {
+      font-size: 11px;
+      color: #0f172a;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
       border-radius: 6px;
-      padding: 10px 16px;
-      font-size: 12px;
-      color: #94a3b8;
-      flex: 1;
-      min-width: 180px;
+      padding: 10px 12px;
+      white-space: pre-wrap;
+      word-break: break-all;
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      max-height: 280px;
+      overflow-y: auto;
     }
 
-    .badge-icon { font-size: 16px; }
-    .badge.active  { border-color: #22c55e44; color: #4ade80; }
-    .badge.inactive { border-color: #1e2d4a; color: #475569; }
+    .ssh-command-block {
+      font-size: 11px;
+      color: #0f172a;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 10px 12px;
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    }
+
+    /* ── Footer ─────────────────────────────────────────────────── */
 
     footer {
-      border-top: 1px solid #1e2d4a;
-      padding: 12px 32px;
+      margin-top: auto;
+      border-top: 1px solid #1a2744;
+      padding: 12px 40px;
       display: flex;
       justify-content: space-between;
+      align-items: center;
       font-size: 11px;
       color: #334155;
     }
 
-    .deployed-by {
-      display: flex;
-      align-items: center;
-      gap: 8px;
+    footer .footer-center {
+      color: #475569;
+      letter-spacing: 0.3px;
     }
 
-    .wl-badge {
-      background: #1e3a5f;
-      color: #60a5fa;
-      font-size: 11px;
+    .okta-badge {
+      display: inline-block;
+      background: #0061F2;
+      color: white;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1px;
       padding: 2px 8px;
-      border-radius: 4px;
-      font-weight: 600;
+      border-radius: 3px;
+      text-transform: uppercase;
+      margin-right: 6px;
+      vertical-align: middle;
     }
   </style>
 </head>
 <body>
 
-<header>
-  <div class="header-left">
-    <span class="okta-badge">OPA</span>
-    <h1>Mission Control — <span id="customer-name">Loading…</span></h1>
+<!-- Row 1: Hero Banner -->
+<div class="hero">
+  <div class="hero-left">
+    <div class="hero-status-label">Deployment Status</div>
+    <div class="hero-status-value awaiting" id="deploy-status">Awaiting Deployment…</div>
+    <div class="hero-timestamp" id="deploy-timestamp">—</div>
   </div>
-  <div class="header-right">
-    <span class="refresh-badge"><span class="live-dot"></span>Live · refreshes every 3s</span>
+
+  <div class="hero-center">
+    <div class="hero-customer-label">Customer</div>
+    <div class="hero-customer-name" id="customer-name">Loading…</div>
   </div>
-</header>
 
-<main>
+  <div class="hero-right">
+    <div class="cred-counter" id="cred-count">0</div>
+    <div class="cred-label">Standing Credentials Used</div>
+  </div>
 
-  <div class="card-hero">
-    <div class="hero-status">
-      <div class="hero-status-label">Deployment Status</div>
-      <div class="hero-status-value awaiting" id="deploy-status">Awaiting deployment…</div>
-      <div style="margin-top:8px; font-size:13px; color:#64748b;" id="deploy-timestamp">—</div>
+  <div class="hero-live">
+    <span class="live-dot"></span>
+    Live · refreshes every 3s
+  </div>
+</div>
+
+<!-- Row 2: Security Flow Visualization -->
+<div class="flow-row">
+  <div class="flow-label">Authentication Trust Chain</div>
+  <div class="flow-track">
+
+    <div class="flow-node" id="flow-github">
+      <div class="flow-node-icon">⚙️</div>
+      <div class="flow-node-title">GitHub Actions</div>
+      <div class="flow-node-detail">OIDC JWT issued by platform</div>
+      <div class="flow-node-check">✓ No stored keys</div>
     </div>
-    <div class="credential-counter">
-      <div class="credential-number" id="cred-count">0</div>
-      <div class="credential-label">Standing Credentials Used</div>
+
+    <div class="flow-arrow">
+      <div class="flow-arrow-line" id="flow-arrow-1"></div>
+      <div class="flow-arrow-label">OIDC JWT</div>
     </div>
+
+    <div class="flow-node" id="flow-opa">
+      <div class="flow-node-icon">🛡️</div>
+      <div class="flow-node-title">OPA Gateway</div>
+      <div class="flow-node-detail">Validates JWT · issues token</div>
+      <div class="flow-node-check">✓ Token issued</div>
+    </div>
+
+    <div class="flow-arrow">
+      <div class="flow-arrow-line" id="flow-arrow-2"></div>
+      <div class="flow-arrow-label">SSH Cert</div>
+    </div>
+
+    <div class="flow-node" id="flow-server">
+      <div class="flow-node-icon">🖥️</div>
+      <div class="flow-node-title">Target Server</div>
+      <div class="flow-node-detail">Ephemeral cert · JIT account</div>
+      <div class="flow-node-check">✓ JIT Account</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Row 3: Data Cards -->
+<div class="data-row">
+
+  <div class="card" id="card-identity">
+    <div class="card-label">Deployed By · OPA Connection</div>
+    <div class="card-value">
+      <span class="wl-badge" id="wl-badge" style="display:none">WL</span><span id="deployed-by">—</span>
+    </div>
+    <div class="card-sub" id="opa-connection">—</div>
   </div>
 
-  <div class="card">
-    <div class="card-label">Deployed By</div>
-    <div class="card-value deployed-by">
-      <span class="wl-badge" id="deployed-by-badge" style="display:none">WL</span>
-      <span id="deployed-by">—</span>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-label">Session Duration</div>
+  <div class="card" id="card-session">
+    <div class="card-label">Session Duration · Git Info</div>
     <div class="card-value" id="session-duration">—</div>
+    <div class="card-sub" id="git-info">—</div>
   </div>
 
-  <div class="card">
-    <div class="card-label">OPA Workload Connection</div>
-    <div class="card-value" id="opa-connection">—</div>
-  </div>
+</div>
 
-  <div class="card">
-    <div class="card-label">Git Commit · Branch · Repo</div>
-    <div class="card-value" id="git-info">—</div>
-  </div>
+<!-- Row 4: Security Properties Strip -->
+<div class="badges-row">
 
-  <div class="card-security">
-    <div class="badge inactive" id="badge-oidc">
-      <span class="badge-icon">🔐</span>
-      <span>OIDC Token Validated</span>
-    </div>
-    <div class="badge inactive" id="badge-cert">
-      <span class="badge-icon">📜</span>
-      <span>Ephemeral SSH Cert Issued</span>
-    </div>
-    <div class="badge inactive" id="badge-jit">
-      <span class="badge-icon">⚡</span>
-      <span>JIT Account Created</span>
-    </div>
-    <div class="badge inactive" id="badge-teardown">
-      <span class="badge-icon">🔒</span>
-      <span>Session Closed · Cert Expired</span>
+  <div class="badge inactive" id="badge-oidc">
+    <span class="badge-icon">🔐</span>
+    <div class="badge-text">
+      <span class="badge-title">OIDC Token Validated</span>
+      <span class="badge-sub">Platform identity confirmed</span>
     </div>
   </div>
 
-</main>
+  <div class="badge inactive" id="badge-cert">
+    <span class="badge-icon">📜</span>
+    <div class="badge-text">
+      <span class="badge-title">Ephemeral SSH Cert Issued</span>
+      <span class="badge-sub">Short-lived · auto-expiring</span>
+    </div>
+  </div>
 
+  <div class="badge inactive" id="badge-jit">
+    <span class="badge-icon">⚡</span>
+    <div class="badge-text">
+      <span class="badge-title">JIT Account Created</span>
+      <span class="badge-sub">Zero standing privilege</span>
+    </div>
+  </div>
+
+  <div class="badge inactive" id="badge-teardown">
+    <span class="badge-icon">🔒</span>
+    <div class="badge-text">
+      <span class="badge-title">Session Closed · Cert Expired</span>
+      <span class="badge-sub">Account torn down</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── Evidence: Deployment Details ─────────────────────────────── -->
+<div class="evidence-section" id="section-deployment">
+  <div class="evidence-section-title">Deployment Details</div>
+  <div class="evidence-grid">
+    <div class="evidence-card">
+      <div class="evidence-field">
+        <div class="evidence-label">Workflow Run</div>
+        <div class="evidence-value" id="ev-run-number">—</div>
+      </div>
+      <div class="evidence-field">
+        <div class="evidence-label">Run ID (link)</div>
+        <div class="evidence-value" id="ev-run-id">—</div>
+      </div>
+      <div class="evidence-field">
+        <div class="evidence-label">Triggered By</div>
+        <div class="evidence-value" id="ev-triggered-by">—</div>
+      </div>
+    </div>
+    <div class="evidence-card">
+      <div class="evidence-field">
+        <div class="evidence-label">Repository</div>
+        <div class="evidence-value" id="ev-repo">—</div>
+      </div>
+      <div class="evidence-field">
+        <div class="evidence-label">Branch</div>
+        <div class="evidence-value" id="ev-branch">—</div>
+      </div>
+      <div class="evidence-field">
+        <div class="evidence-label">Commit</div>
+        <div class="evidence-value" id="ev-commit">—</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Evidence: GitHub Runner ───────────────────────────────────── -->
+<div class="evidence-section" id="section-runner">
+  <div class="evidence-section-title">GitHub Runner</div>
+  <div class="evidence-grid">
+    <div class="evidence-card">
+      <div class="evidence-field">
+        <div class="evidence-label">Runner Hostname</div>
+        <div class="evidence-value" id="ev-runner-hostname">—</div>
+      </div>
+      <div class="evidence-field">
+        <div class="evidence-label">Runner Egress IP</div>
+        <div class="evidence-value" id="ev-runner-ip">—</div>
+      </div>
+    </div>
+    <div class="evidence-card">
+      <div class="evidence-field">
+        <div class="evidence-label">Executed At</div>
+        <div class="evidence-value" id="ev-runner-executed-at">—</div>
+      </div>
+      <div class="evidence-field">
+        <div class="evidence-label">Session Duration</div>
+        <div class="evidence-value" id="ev-session-dur">—</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Evidence: Step 1 — GitHub OIDC Token ─────────────────────── -->
+<div class="evidence-section" id="section-oidc">
+  <div class="evidence-section-title">Authentication Evidence</div>
+  <div class="evidence-card-full">
+    <div class="evidence-card-header">
+      <div class="evidence-step-label">
+        <span class="evidence-step-num">1</span>GitHub OIDC Token
+      </div>
+    </div>
+    <div class="token-timestamps">
+      <div class="evidence-field">
+        <div class="evidence-label">Issued At (iat)</div>
+        <div class="evidence-value" id="ev-oidc-iat">—</div>
+      </div>
+      <div class="evidence-field">
+        <div class="evidence-label">Not Before</div>
+        <div class="evidence-value" id="ev-oidc-nbf">—</div>
+      </div>
+      <div class="evidence-field">
+        <div class="evidence-label">Expires (exp)</div>
+        <div class="evidence-value" id="ev-oidc-exp">—</div>
+      </div>
+    </div>
+    <div class="token-display">
+      <div class="token-preview" id="oidc-preview">—</div>
+      <div class="token-buttons">
+        <button class="btn-toggle" id="btn-oidc-full" onclick="toggleFull('oidc')">Show Full Token</button>
+        <button class="btn-toggle" id="btn-oidc-decode" onclick="toggleDecode('oidc')">Decode JWT</button>
+      </div>
+      <pre class="token-full" id="oidc-full"></pre>
+      <div class="token-decoded" id="oidc-decoded">
+        <div class="decoded-block">
+          <div class="decoded-block-label">Header</div>
+          <pre class="decoded-pre" id="oidc-header-pre"></pre>
+        </div>
+        <div class="decoded-block">
+          <div class="decoded-block-label">Payload</div>
+          <pre class="decoded-pre" id="oidc-payload-pre"></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Evidence: Step 2 — OPA Access Token ──────────────────────── -->
+<div class="evidence-section" id="section-opa-token">
+  <div class="evidence-card-full">
+    <div class="evidence-card-header">
+      <div class="evidence-step-label">
+        <span class="evidence-step-num">2</span>OPA Access Token
+      </div>
+      <span class="ttl-badge">300s · Expired</span>
+    </div>
+    <div class="token-timestamps">
+      <div class="evidence-field">
+        <div class="evidence-label">Issued At (iat)</div>
+        <div class="evidence-value" id="ev-opa-iat">—</div>
+      </div>
+      <div class="evidence-field">
+        <div class="evidence-label">Not Before</div>
+        <div class="evidence-value" id="ev-opa-nbf">—</div>
+      </div>
+      <div class="evidence-field">
+        <div class="evidence-label">Expires (exp)</div>
+        <div class="evidence-value" id="ev-opa-exp">—</div>
+      </div>
+    </div>
+    <div class="token-display">
+      <div class="token-preview" id="opa-preview">—</div>
+      <div class="token-buttons">
+        <button class="btn-toggle" id="btn-opa-full" onclick="toggleFull('opa')">Show Full Token</button>
+        <button class="btn-toggle" id="btn-opa-decode" onclick="toggleDecode('opa')">Decode JWT</button>
+      </div>
+      <pre class="token-full" id="opa-full"></pre>
+      <div class="token-decoded" id="opa-decoded">
+        <div class="decoded-block">
+          <div class="decoded-block-label">Header</div>
+          <pre class="decoded-pre" id="opa-header-pre"></pre>
+        </div>
+        <div class="decoded-block">
+          <div class="decoded-block-label">Payload</div>
+          <pre class="decoded-pre" id="opa-payload-pre"></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Evidence: Step 3 — SSH Connection ────────────────────────── -->
+<div class="evidence-section" id="section-ssh">
+  <div class="evidence-card-full">
+    <div class="evidence-card-header">
+      <div class="evidence-step-label">
+        <span class="evidence-step-num">3</span>SSH Connection
+      </div>
+    </div>
+    <div class="evidence-grid">
+      <div class="evidence-field">
+        <div class="evidence-label">Target Host</div>
+        <div class="evidence-value" id="ev-ssh-host">—</div>
+      </div>
+      <div class="evidence-field">
+        <div class="evidence-label">Executed At</div>
+        <div class="evidence-value" id="ev-ssh-executed-at">—</div>
+      </div>
+    </div>
+    <div class="evidence-field">
+      <div class="evidence-label">Command Executed</div>
+      <div class="ssh-command-block" id="ev-ssh-command">—</div>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
 <footer>
   <span id="footer-connection">OPA Connection: —</span>
+  <span class="footer-center"><span class="okta-badge">OPA</span>Powered by Okta Privileged Access · Workload Identity for Automation</span>
   <span id="footer-count">Deployments: 0</span>
-  <span>Workload Identity for Automation · Okta Privileged Access</span>
 </footer>
 
 <script>
   const STATE_URL = '/state.json';
   const REFRESH_MS = 3000;
 
-  function fmt(val, fallback = '—') {
+  function fmt(val, fallback) {
+    fallback = (fallback !== undefined) ? fallback : '—';
     return (val !== null && val !== undefined && val !== '') ? val : fallback;
   }
 
+  function epochToHuman(epoch) {
+    if (!epoch) return '—';
+    return new Date(epoch * 1000).toUTCString();
+  }
+
+  function decodeJWT(token) {
+    if (!token || typeof token !== 'string') return null;
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+    function b64url(s) {
+      s = s.replace(/-/g, '+').replace(/_/g, '/');
+      while (s.length % 4) s += '=';
+      return JSON.parse(atob(s));
+    }
+    try {
+      return { header: b64url(parts[0]), payload: b64url(parts[1]) };
+    } catch(e) { return null; }
+  }
+
+  // Per-token toggle state
+  const _tokenState = {
+    oidc: { fullVisible: false, decodeVisible: false },
+    opa:  { fullVisible: false, decodeVisible: false }
+  };
+
+  function toggleFull(which) {
+    const st = _tokenState[which];
+    st.fullVisible = !st.fullVisible;
+    const el = document.getElementById(which + '-full');
+    const btn = document.getElementById('btn-' + which + '-full');
+    el.style.display = st.fullVisible ? 'block' : 'none';
+    btn.textContent = st.fullVisible ? 'Hide Token' : 'Show Full Token';
+  }
+
+  function toggleDecode(which) {
+    const st = _tokenState[which];
+    st.decodeVisible = !st.decodeVisible;
+    const el = document.getElementById(which + '-decoded');
+    const btn = document.getElementById('btn-' + which + '-decode');
+    el.classList.toggle('visible', st.decodeVisible);
+    btn.textContent = st.decodeVisible ? 'Hide Decoded' : 'Decode JWT';
+  }
+
+  function setFlowActive(deployed) {
+    const nodes = ['flow-github', 'flow-opa', 'flow-server'];
+    const arrows = ['flow-arrow-1', 'flow-arrow-2'];
+
+    if (deployed) {
+      nodes.forEach((id, i) => {
+        setTimeout(() => {
+          document.getElementById(id).classList.add('active');
+        }, i * 300);
+      });
+      arrows.forEach((id, i) => {
+        setTimeout(() => {
+          document.getElementById(id).classList.add('active');
+        }, (i + 1) * 300);
+      });
+    } else {
+      nodes.forEach(id => document.getElementById(id).classList.remove('active'));
+      arrows.forEach(id => document.getElementById(id).classList.remove('active'));
+    }
+  }
+
+  let lastStatus = null;
+
+  function showSection(id, visible) {
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle('visible', visible);
+  }
+
   function renderState(s) {
+    // Customer name
     document.getElementById('customer-name').textContent = fmt(s.customer, 'Demo Customer');
 
+    // Credential counter
     const cred = s.standing_credentials_used || 0;
     const credEl = document.getElementById('cred-count');
     credEl.textContent = cred;
-    credEl.className = 'credential-number' + (cred > 0 ? ' nonzero' : '');
+    credEl.className = 'cred-counter' +
+      (cred > 0 ? ' nonzero' : (s.status === 'success' ? ' deployed' : ''));
 
+    // Hero status
     const statusEl = document.getElementById('deploy-status');
     const tsEl = document.getElementById('deploy-timestamp');
+    const deployed = s.status === 'success';
 
-    if (s.status === 'success' && s.last_deploy) {
-      statusEl.textContent = '✅ Deployment Successful';
+    if (deployed && s.last_deploy) {
+      statusEl.textContent = '✅ DEPLOYMENT SUCCESSFUL';
       statusEl.className = 'hero-status-value success';
       tsEl.textContent = 'Last deploy: ' + s.last_deploy;
     } else {
-      statusEl.textContent = 'Awaiting deployment…';
+      statusEl.textContent = 'Awaiting Deployment…';
       statusEl.className = 'hero-status-value awaiting';
       tsEl.textContent = '—';
     }
 
+    // Flow nodes — only trigger animation on state change to avoid re-firing on every poll
+    if (deployed !== lastStatus) {
+      setFlowActive(deployed);
+      lastStatus = deployed;
+    }
+
+    // Data cards
     const dbVal = fmt(s.deployed_by);
     document.getElementById('deployed-by').textContent = dbVal;
-    const badge = document.getElementById('deployed-by-badge');
-    badge.style.display = dbVal.startsWith('wl_') ? 'inline-block' : 'none';
+    const wlBadge = document.getElementById('wl-badge');
+    wlBadge.style.display = dbVal.startsWith('wl_') ? 'inline-block' : 'none';
+
+    document.getElementById('opa-connection').textContent = fmt(s.opa_connection);
 
     const dur = s.session_duration_seconds;
     document.getElementById('session-duration').textContent =
-      dur !== null && dur !== undefined ? dur + 's' : '—';
-
-    document.getElementById('opa-connection').textContent = fmt(s.opa_connection);
+      (dur !== null && dur !== undefined) ? dur + 's' : '—';
 
     const branch = fmt(s.git_branch, '');
     const commit = s.git_commit ? s.git_commit.slice(0, 7) : '';
@@ -337,15 +1036,93 @@
     const gitParts = [commit, branch, repo].filter(Boolean);
     document.getElementById('git-info').textContent = gitParts.join(' · ') || '—';
 
-    const deployed = s.status === 'success';
+    // Card active state
+    ['card-identity', 'card-session'].forEach(id => {
+      document.getElementById(id).className = 'card' + (deployed ? ' active' : '');
+    });
+
+    // Security badges
     ['badge-oidc', 'badge-cert', 'badge-jit', 'badge-teardown'].forEach(id => {
       document.getElementById(id).className = 'badge ' + (deployed ? 'active' : 'inactive');
     });
 
+    // Footer
     document.getElementById('footer-connection').textContent =
       'OPA Connection: ' + fmt(s.opa_connection);
     document.getElementById('footer-count').textContent =
       'Deployments: ' + (s.deployment_count || 0);
+
+    // ── Evidence sections — only show after successful deploy ──────
+    const showEvidence = deployed;
+    showSection('section-deployment', showEvidence);
+    showSection('section-runner', showEvidence);
+    showSection('section-oidc', showEvidence);
+    showSection('section-opa-token', showEvidence);
+    showSection('section-ssh', showEvidence);
+
+    if (!showEvidence) return;
+
+    // Deployment Details
+    const runNum = fmt(s.workflow_run_number);
+    document.getElementById('ev-run-number').textContent = 'Run #' + runNum;
+
+    const runId = s.workflow_run_id;
+    const runIdEl = document.getElementById('ev-run-id');
+    if (runId && s.git_repo) {
+      runIdEl.innerHTML = '<a href="https://github.com/' + s.git_repo + '/actions/runs/' + runId + '" target="_blank">' + runId + '</a>';
+    } else {
+      runIdEl.textContent = fmt(runId);
+    }
+
+    document.getElementById('ev-triggered-by').textContent = fmt(s.triggered_by);
+    document.getElementById('ev-repo').textContent = fmt(s.git_repo);
+    document.getElementById('ev-branch').textContent = fmt(s.git_branch);
+    document.getElementById('ev-commit').textContent = s.git_commit ? s.git_commit : '—';
+
+    // Runner
+    document.getElementById('ev-runner-hostname').textContent = fmt(s.runner_hostname);
+    document.getElementById('ev-runner-ip').textContent = fmt(s.runner_ip);
+    document.getElementById('ev-runner-executed-at').textContent = fmt(s.runner_executed_at);
+    document.getElementById('ev-session-dur').textContent =
+      (s.session_duration_seconds !== null && s.session_duration_seconds !== undefined)
+        ? s.session_duration_seconds + 's' : '—';
+
+    // OIDC Token
+    document.getElementById('ev-oidc-iat').textContent = epochToHuman(s.oidc_token_iat);
+    document.getElementById('ev-oidc-nbf').textContent = epochToHuman(s.oidc_token_iat); // nbf = iat for GitHub OIDC
+    document.getElementById('ev-oidc-exp').textContent = epochToHuman(s.oidc_token_exp);
+
+    if (s.oidc_token) {
+      document.getElementById('oidc-preview').textContent = s.oidc_token.slice(0, 60) + '…';
+      document.getElementById('oidc-full').textContent = s.oidc_token;
+      const dec = decodeJWT(s.oidc_token);
+      if (dec) {
+        document.getElementById('oidc-header-pre').textContent = JSON.stringify(dec.header, null, 2);
+        document.getElementById('oidc-payload-pre').textContent = JSON.stringify(dec.payload, null, 2);
+      }
+    }
+
+    // OPA Token
+    document.getElementById('ev-opa-iat').textContent = epochToHuman(s.opa_token_iat);
+    document.getElementById('ev-opa-nbf').textContent = epochToHuman(s.opa_token_iat);
+    document.getElementById('ev-opa-exp').textContent = epochToHuman(s.opa_token_exp);
+
+    if (s.opa_token) {
+      document.getElementById('opa-preview').textContent = s.opa_token.slice(0, 60) + '…';
+      document.getElementById('opa-full').textContent = s.opa_token;
+      const dec = decodeJWT(s.opa_token);
+      if (dec) {
+        document.getElementById('opa-header-pre').textContent = JSON.stringify(dec.header, null, 2);
+        document.getElementById('opa-payload-pre').textContent = JSON.stringify(dec.payload, null, 2);
+      }
+    }
+
+    // SSH Connection
+    document.getElementById('ev-ssh-host').textContent = fmt(s.ssh_target_host, 'target-server-01');
+    document.getElementById('ev-ssh-executed-at').textContent = fmt(s.runner_executed_at);
+    document.getElementById('ev-ssh-command').textContent =
+      'sft ssh --team farley --workload-role github_actions ' + fmt(s.ssh_target_host, 'target-server-01') + '\n' +
+      '  echo "${PAYLOAD_B64}" | base64 -d | tee /var/www/demo-app/state.json > /dev/null';
   }
 
   async function fetchState() {

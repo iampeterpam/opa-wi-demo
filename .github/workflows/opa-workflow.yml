@@ -40,6 +40,8 @@ jobs:
         run: |
           echo "OPA_ADDR=https://pfarley.pam.oktapreview.com" >> $GITHUB_ENV
           echo "SFT_TEAM=farley" >> $GITHUB_ENV
+          echo "RUNNER_HOSTNAME=$(hostname)" >> $GITHUB_ENV
+          echo "RUNNER_IP=$(curl -sf https://checkip.amazonaws.com 2>/dev/null | tr -d '[:space:]' || echo 'unknown')" >> $GITHUB_ENV
 
       # ── Step 3: Request GitHub OIDC JWT ─────────────────────────────────
       - name: Request GitHub OIDC Token
@@ -68,6 +70,13 @@ jobs:
           curl -s https://token.actions.githubusercontent.com/.well-known/jwks | \
             jq '.keys[] | {kid: .kid, alg: .alg, kty: .kty}' || true
 
+          # Extract iat/exp BEFORE masking so env vars hold real values
+          _OIDC_P=$(echo "$OIDC_TOKEN" | cut -d. -f2)
+          _MOD=$(( ${#_OIDC_P} % 4 ))
+          [ $_MOD -ne 0 ] && _OIDC_P="${_OIDC_P}$(printf '=%.0s' $(seq 1 $((4 - _MOD))))"
+          echo "OIDC_IAT=$(echo "$_OIDC_P" | base64 -d 2>/dev/null | jq -r '.iat // empty')" >> $GITHUB_ENV
+          echo "OIDC_EXP=$(echo "$_OIDC_P" | base64 -d 2>/dev/null | jq -r '.exp // empty')" >> $GITHUB_ENV
+
           echo "::add-mask::$OIDC_TOKEN"
           echo "token=$OIDC_TOKEN" >> $GITHUB_OUTPUT
           echo "✅ OIDC token received (masked)"
@@ -95,6 +104,14 @@ jobs:
           [ $MOD -ne 0 ] && OPA_PAYLOAD="${OPA_PAYLOAD}$(printf '=%.0s' $(seq 1 $((4 - MOD))))"
           echo "$OPA_PAYLOAD" | base64 -d 2>/dev/null | jq '.' || true
 
+          # Extract iat/exp and stash raw token BEFORE masking
+          _OPA_P=$(echo "$OPA_TOKEN" | cut -d. -f2)
+          _MOD=$(( ${#_OPA_P} % 4 ))
+          [ $_MOD -ne 0 ] && _OPA_P="${_OPA_P}$(printf '=%.0s' $(seq 1 $((4 - _MOD))))"
+          echo "OPA_IAT=$(echo "$_OPA_P" | base64 -d 2>/dev/null | jq -r '.iat // empty')" >> $GITHUB_ENV
+          echo "OPA_EXP=$(echo "$_OPA_P" | base64 -d 2>/dev/null | jq -r '.exp // empty')" >> $GITHUB_ENV
+          echo "OPA_TOKEN_RAW=${OPA_TOKEN}" >> $GITHUB_ENV
+
           echo "::add-mask::$OPA_TOKEN"
           echo "OPA_TOKEN=$OPA_TOKEN" >> $GITHUB_ENV
           echo "✅ OPA token issued (TTL: 300s)"
@@ -120,7 +137,20 @@ jobs:
             "opa_connection": "github-actions-prod",
             "git_repo": "${{ github.repository }}",
             "git_branch": "${{ github.ref_name }}",
-            "git_commit": "${{ github.sha }}"
+            "git_commit": "${{ github.sha }}",
+            "workflow_run_id": "${{ github.run_id }}",
+            "workflow_run_number": ${{ github.run_number }},
+            "triggered_by": "${{ github.triggering_actor }}",
+            "runner_hostname": "${RUNNER_HOSTNAME}",
+            "runner_ip": "${RUNNER_IP}",
+            "runner_executed_at": "${TIMESTAMP}",
+            "oidc_token": "${{ steps.oidc.outputs.token }}",
+            "oidc_token_iat": ${OIDC_IAT:-0},
+            "oidc_token_exp": ${OIDC_EXP:-0},
+            "opa_token": "${OPA_TOKEN_RAW}",
+            "opa_token_iat": ${OPA_IAT:-0},
+            "opa_token_exp": ${OPA_EXP:-0},
+            "ssh_target_host": "target-server-01"
           }
           JSON
           )
