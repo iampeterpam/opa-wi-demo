@@ -50,7 +50,7 @@ jobs:
         run: |
           echo "Requesting OIDC token from GitHub..."
           OIDC_TOKEN=$(curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
-            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=https://pfarley.pam.oktapreview.com" | jq -r '.value')
+            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=farley" | jq -r '.value')
           echo "=== JWT Claims (pre-mask) ==="
           PAYLOAD=$(echo "$OIDC_TOKEN" | cut -d. -f2)
           MOD=$((${#PAYLOAD} % 4))
