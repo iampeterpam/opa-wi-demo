@@ -67,9 +67,8 @@ jobs:
         env:
           GITHUB_OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
         run: |
-          echo "=== sft workload authenticate help ==="
-          sft workload authenticate --help 2>&1 || true
-          echo "=== end help ==="
+          echo "JWT env var length: ${#GITHUB_OIDC_TOKEN}"
+          echo "JWT part count: $(echo "$GITHUB_OIDC_TOKEN" | tr -cd '.' | wc -c)"
           echo "Authenticating with OPA using Workload Connection: github-actions-prod"
           OPA_TOKEN=$(sft workload authenticate \
             --team farley \
