@@ -66,9 +66,17 @@ jobs:
         id: opa-auth
         env:
           GITHUB_OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
+          SFT_LOG_LEVEL: debug
         run: |
+          echo "=== sft config ==="
+          cat ~/.config/sft/sft.yaml || echo "(no sft.yaml)"
+          sft config get 2>&1 || true
+          echo "=== DNS check ==="
+          host pfarley.pam.oktapreview.com || nslookup pfarley.pam.oktapreview.com || true
+          echo "=== JWT diagnostics ==="
           echo "JWT env var length: ${#GITHUB_OIDC_TOKEN}"
           echo "JWT part count: $(echo "$GITHUB_OIDC_TOKEN" | tr -cd '.' | wc -c)"
+          echo "=== authenticate ==="
           echo "Authenticating with OPA using Workload Connection: github-actions-prod"
           OPA_TOKEN=$(sft workload authenticate \
             --team farley \
