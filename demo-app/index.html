@@ -1572,7 +1572,7 @@
           <div class="audit-field-value" id="ev-ssh-login-host">—</div>
         </div>
         <div class="audit-row">
-          <div class="audit-field-label">security policy</div>
+          <div class="audit-field-label">ssh algorithm</div>
           <div class="audit-field-value" id="ev-ssh-login-policy">—</div>
         </div>
       </div>
@@ -2216,6 +2216,12 @@
       document.getElementById('ev-audit-uuid-row').style.display = '';
     }
 
+    // serverHostnames confirmed live from Okta — overwrites state.json value
+    if (data.server_hostnames) {
+      document.getElementById('ev-audit-server').innerHTML =
+        '<strong>' + data.server_hostnames + '</strong>';
+    }
+
     // x509 fingerprint (shown only when confirmed present in debugContext)
     if (data.x509_fingerprint) {
       document.getElementById('ev-audit-x509').textContent = data.x509_fingerprint;
@@ -2294,8 +2300,8 @@
       document.getElementById('ev-ssh-login-host').innerHTML =
         '<strong>' + data.target_host + '</strong>';
     }
-    if (data.security_policy) {
-      document.getElementById('ev-ssh-login-policy').textContent = data.security_policy;
+    if (data.ssh_algorithm) {
+      document.getElementById('ev-ssh-login-policy').textContent = data.ssh_algorithm;
     }
   }
 

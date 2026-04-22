@@ -329,6 +329,7 @@ class Handler(BaseHTTPRequestHandler):
             'target0_name':      targets[0].get('displayName') if len(targets) > 0 else None,
             'target1_name':      targets[1].get('displayName') if len(targets) > 1 else None,
             'x509_fingerprint':  debug.get('x509KeyFingerprint'),  # null if not present
+            'server_hostnames':  debug.get('ServerHostnames'),
         }
         self._send_json(200, result)
 
@@ -386,24 +387,20 @@ class Handler(BaseHTTPRequestHandler):
         targets = match.get('target', [])
         debug   = match.get('debugContext', {}).get('debugData', {})
 
-        # Security policy is typically the last target entry of type 'SecurityPolicy'
-        security_policy = None
         host_name = None
         for t in targets:
-            if t.get('type') == 'SecurityPolicy':
-                security_policy = t.get('displayName')
             if t.get('displayName', '').lower() == target_host.lower():
                 host_name = t.get('displayName')
 
         result = {
-            'found':           True,
-            'uuid':            match.get('uuid'),
-            'published':       match.get('published'),
-            'outcome':         outcome.get('result'),
-            'actor_id':        actor.get('id'),
-            'actor_type':      actor.get('type'),
-            'target_host':     host_name or target_host,
-            'security_policy': security_policy,
+            'found':         True,
+            'uuid':          match.get('uuid'),
+            'published':     match.get('published'),
+            'outcome':       outcome.get('result'),
+            'actor_id':      actor.get('id'),
+            'actor_type':    actor.get('type'),
+            'target_host':   host_name or target_host,
+            'ssh_algorithm': debug.get('SshAlgorithm'),
         }
         self._send_json(200, result)
 
