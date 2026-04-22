@@ -127,7 +127,7 @@
     }
 
     .cred-counter {
-      font-size: 88px;
+      font-size: 56px;
       font-weight: 700;
       line-height: 1;
       color: #1d1d21;
@@ -145,6 +145,13 @@
       text-transform: uppercase;
       color: #6e6e78;
       text-align: right;
+    }
+
+    .hero-run-ts {
+      font-size: 12px;
+      color: #6e6e78;
+      text-align: right;
+      margin-top: 4px;
     }
 
     .hero-live {
@@ -1236,8 +1243,9 @@
   </div>
 
   <div class="hero-right">
-    <div class="cred-counter" id="cred-count">0</div>
-    <div class="cred-label">Deployments</div>
+    <div class="cred-counter" id="cred-count">—</div>
+    <div class="cred-label">Workflow Run</div>
+    <div class="hero-run-ts" id="hero-run-ts">No deployments yet</div>
   </div>
 
 </div>
@@ -1248,7 +1256,15 @@
   <div class="steps-panel" id="steps-panel">
     <div class="steps-panel-label">Pipeline Execution</div>
     <div class="steps-panel-meta" id="steps-meta">Ready</div>
-    <div class="steps-list" id="steps-list"></div>
+    <div class="steps-list" id="steps-list">
+      <div class="step-row" id="step-row-0"><span class="step-icon" id="step-icon-0">○</span><span>Checkout</span></div>
+      <div class="step-row" id="step-row-1"><span class="step-icon" id="step-icon-1">○</span><span>Install OPA sft CLI</span></div>
+      <div class="step-row" id="step-row-2"><span class="step-icon" id="step-icon-2">○</span><span>Configure sft</span></div>
+      <div class="step-row" id="step-row-3"><span class="step-icon" id="step-icon-3">○</span><span>Request GitHub OIDC Token</span></div>
+      <div class="step-row" id="step-row-4"><span class="step-icon" id="step-icon-4">○</span><span>Authenticate with OPA Workload Identity</span></div>
+      <div class="step-row" id="step-row-5"><span class="step-icon" id="step-icon-5">○</span><span>Update dashboard via brokered SSH</span></div>
+      <div class="step-row" id="step-row-6"><span class="step-icon" id="step-icon-6">○</span><span>Update session duration</span></div>
+    </div>
   </div>
 
   <div class="flow-column">
@@ -1869,11 +1885,15 @@
   }
 
   function renderState(s) {
-    // Deployment counter — mirrors workflow run number
-    const deployCount = s.workflow_run_number || 0;
+    // Hero run number
+    const runNum = s.workflow_run_number || 0;
     const credEl = document.getElementById('cred-count');
-    credEl.textContent = deployCount;
+    credEl.textContent = runNum ? '#' + runNum : '—';
     credEl.className = 'cred-counter' + (s.status === 'success' ? ' deployed' : '');
+    const runTsEl = document.getElementById('hero-run-ts');
+    if (runTsEl) {
+      runTsEl.textContent = s.last_deploy ? s.last_deploy : 'No deployments yet';
+    }
 
     // Hero status — only update if not currently deploying (don't overwrite blue state)
     const statusEl = document.getElementById('deploy-status');
@@ -2086,7 +2106,18 @@
   ];
 
   function initSteps() {
-    renderSteps(STEP_ORDER.map(name => ({ name, status: 'queued', conclusion: null })));
+    // Reset all rows to queued state without touching innerHTML
+    STEP_ORDER.forEach((_, i) => {
+      const row = document.getElementById('step-row-' + i);
+      const icon = document.getElementById('step-icon-' + i);
+      if (!row || !icon) return;
+      row.className = 'step-row';
+      const spinner = row.querySelector('.step-spinner');
+      if (spinner) spinner.remove();
+      icon.style.display = '';
+      icon.className = 'step-icon';
+      icon.textContent = '○';
+    });
     updateStepsMeta(null);
   }
 
@@ -2119,29 +2150,47 @@
   }
 
   // ── Step progress panel ─────────────────────────────────────────
+  // Updates persistent DOM rows — never clears #steps-list innerHTML
   function renderSteps(steps) {
-    const list = document.getElementById('steps-list');
-    if (!steps || steps.length === 0) { list.innerHTML = ''; return; }
+    if (!steps || steps.length === 0) return;
 
-    list.innerHTML = steps.map(step => {
-      let iconHtml, rowClass;
+    steps.forEach((step, i) => {
+      const row = document.getElementById('step-row-' + i);
+      const icon = document.getElementById('step-icon-' + i);
+      if (!row || !icon) return;
+
       if (step.status === 'completed') {
+        const spinner = row.querySelector('.step-spinner');
+        if (spinner) spinner.remove();
+        icon.style.display = '';
         if (step.conclusion === 'failure') {
-          iconHtml = '<span class="step-icon">✗</span>';
-          rowClass = 'step-row failed';
+          row.className = 'step-row failed';
+          icon.className = 'step-icon';
+          icon.textContent = '✗';
         } else {
-          iconHtml = '<span class="step-icon">✓</span>';
-          rowClass = 'step-row done';
+          row.className = 'step-row done';
+          icon.className = 'step-icon';
+          icon.textContent = '✓';
         }
       } else if (step.status === 'in_progress') {
-        iconHtml = '<div class="step-spinner"></div>';
-        rowClass = 'step-row active';
+        row.className = 'step-row active';
+        icon.style.display = 'none';
+        // Insert spinner if not already present
+        if (!row.querySelector('.step-spinner')) {
+          const spinner = document.createElement('div');
+          spinner.className = 'step-spinner';
+          row.insertBefore(spinner, icon);
+        }
       } else {
-        iconHtml = '<span class="step-icon">○</span>';
-        rowClass = 'step-row';
+        row.className = 'step-row';
+        // Remove spinner if present (transitioning out of in_progress)
+        const spinner = row.querySelector('.step-spinner');
+        if (spinner) spinner.remove();
+        icon.style.display = '';
+        icon.className = 'step-icon';
+        icon.textContent = '○';
       }
-      return '<div class="' + rowClass + '">' + iconHtml + '<span>' + step.name + '</span></div>';
-    }).join('');
+    });
 
     // Fix 3: trigger flow nodes for newly completed steps
     steps.forEach(step => {
@@ -2476,7 +2525,7 @@
     if (sshUuidRow) sshUuidRow.style.display = 'none';
     setFlowActive(false);
     initSteps();
-    const preservedCount = parseInt(document.getElementById('cred-count').textContent, 10) || 0;
+    const preservedCount = parseInt(document.getElementById('cred-count').textContent.replace('#', ''), 10) || 0;
     renderState({ ...BLANK_STATE, workflow_run_number: preservedCount });
   }
 
