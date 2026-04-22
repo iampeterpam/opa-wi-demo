@@ -80,7 +80,7 @@
       border-bottom: 1px solid #e1e3e8;
       padding: 28px 40px 20px;
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr;
       align-items: center;
       gap: 24px;
     }
@@ -119,41 +119,6 @@
       margin-top: 4px;
     }
 
-    .hero-right {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 4px;
-    }
-
-    .cred-counter {
-      font-size: 56px;
-      font-weight: 700;
-      line-height: 1;
-      color: #1d1d21;
-      transition: color 0.4s ease;
-    }
-
-    .cred-counter.deployed {
-      color: #1e7e34;
-    }
-
-    .cred-label {
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: #6e6e78;
-      text-align: right;
-    }
-
-    .hero-run-ts {
-      font-size: 12px;
-      color: #6e6e78;
-      text-align: right;
-      margin-top: 4px;
-    }
-
     .hero-live {
       grid-column: 1 / -1;
       display: flex;
@@ -183,16 +148,23 @@
 
     /* ── Row 2: Pipeline + Flow Side-by-Side ────────────────────── */
 
-    .pipeline-flow-row {
-      display: flex;
-      align-items: stretch;
+    .hero-mid-row {
+      display: grid;
+      grid-template-columns: 280px 1fr;
       background: #ffffff;
       border-bottom: 1px solid #e1e3e8;
     }
 
-    .flow-column {
-      flex: 1;
-      padding: 24px 40px;
+    .pipeline-row {
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid #e1e3e8;
+    }
+
+    .trust-chain-row {
+      padding: 24px 40px 28px;
+      display: flex;
+      flex-direction: column;
     }
 
     .flow-label {
@@ -213,34 +185,38 @@
     .flow-node {
       flex: 1;
       background: #ffffff;
-      border: 1px solid #e1e3e8;
+      border: 1px solid #d8dce5;
       border-radius: 10px;
-      padding: 16px 20px;
+      padding: 20px 24px;
       display: flex;
       flex-direction: column;
       gap: 6px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
       transition: border-color 0.5s ease, box-shadow 0.5s ease, background 0.5s ease;
     }
 
     .flow-node.active {
       border-color: #0061F2;
-      box-shadow: 0 0 24px rgba(0, 97, 242, 0.12);
+      box-shadow: 0 0 28px rgba(0, 97, 242, 0.15);
       background: #e8f0fe;
     }
 
-    .flow-node-icon { font-size: 22px; }
+    .flow-node-icon {
+      font-size: 32px;
+      margin-bottom: 4px;
+    }
 
     .flow-node-title {
-      font-size: 13px;
+      font-size: 14px;
       font-weight: 700;
-      color: #6e6e78;
+      color: #1d1d21;
       transition: color 0.5s ease;
     }
 
     .flow-node.active .flow-node-title { color: #1d1d21; }
 
     .flow-node-detail {
-      font-size: 11px;
+      font-size: 12px;
       color: #9e9ea8;
       transition: color 0.5s ease;
     }
@@ -249,7 +225,7 @@
 
     .flow-node-check {
       font-size: 11px;
-      color: #e1e3e8;
+      color: #c0c4cc;
       font-weight: 700;
       transition: color 0.5s ease;
     }
@@ -257,7 +233,7 @@
     .flow-node.active .flow-node-check { color: #1e7e34; }
 
     .flow-arrow {
-      flex: 0 0 60px;
+      flex: 0 0 100px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -266,7 +242,7 @@
 
     .flow-arrow-line {
       width: 100%;
-      height: 2px;
+      height: 3px;
       background: #e1e3e8;
       position: relative;
       transition: background 0.5s ease;
@@ -277,25 +253,27 @@
     .flow-arrow-line::after {
       content: '';
       position: absolute;
-      right: -6px;
-      top: -5px;
+      right: -8px;
+      top: -7px;
       width: 0;
       height: 0;
-      border-left: 8px solid #e1e3e8;
-      border-top: 6px solid transparent;
-      border-bottom: 6px solid transparent;
+      border-left: 10px solid #e1e3e8;
+      border-top: 7px solid transparent;
+      border-bottom: 7px solid transparent;
       transition: border-left-color 0.5s ease;
     }
 
     .flow-arrow-line.active::after { border-left-color: #0061F2; }
 
     .flow-arrow-label {
-      font-size: 9px;
+      font-size: 10px;
+      font-weight: 600;
       color: #9e9ea8;
-      letter-spacing: 0.5px;
+      letter-spacing: 0;
       text-align: center;
       transition: color 0.5s ease;
       margin-top: 6px;
+      white-space: nowrap;
     }
 
     .flow-arrow-line.active + .flow-arrow-label { color: #0061F2; }
@@ -466,7 +444,7 @@
       display: flex;
       flex-direction: column;
       gap: 14px;
-      overflow-x: hidden;
+      overflow-x: clip;
     }
 
     .evidence-card-header {
@@ -847,24 +825,22 @@
         grid-template-columns: 1fr;
       }
 
-      .hero-right {
-        display: none;
+
+      .hero-mid-row {
+        grid-template-columns: 1fr;
       }
 
-      /* Stack pipeline + trust chain vertically */
-      .pipeline-flow-row {
-        flex-direction: column;
-      }
-
-      .steps-panel {
+      .pipeline-row {
         border-right: none;
         border-bottom: 1px solid #e1e3e8;
       }
 
-      .flow-column {
+      .trust-chain-row {
         padding: 16px;
-        width: 100%;
-        box-sizing: border-box;
+      }
+
+      .steps-panel {
+        padding: 16px;
       }
 
       /* Trust chain: stack nodes vertically */
@@ -974,9 +950,6 @@
         font-size: 9px;
       }
 
-      #cred-count {
-        font-size: 36px;
-      }
     }
 
     .control-btn {
@@ -1013,10 +986,7 @@
     /* ── Pipeline Step Progress Panel ───────────────────────────── */
 
     .steps-panel {
-      flex: 0 0 52%;
-      border-right: 1px solid #e1e3e8;
-      border-bottom: none;
-      padding: 14px 40px;
+      padding: 20px 24px 20px 28px;
       display: flex;
       flex-direction: column;
       gap: 6px;
@@ -1050,6 +1020,7 @@
       display: flex;
       flex-direction: column;
       gap: 6px;
+      margin-top: 4px;
     }
 
     .step-row {
@@ -1242,66 +1213,57 @@
     <div class="hero-timestamp" id="deploy-timestamp">—</div>
   </div>
 
-  <div class="hero-right">
-    <div class="cred-counter" id="cred-count">—</div>
-    <div class="cred-label">Workflow Run</div>
-    <div class="hero-run-ts" id="hero-run-ts">No deployments yet</div>
-  </div>
 
 </div>
 
-<!-- Row 2: Pipeline + Flow Side-by-Side -->
-<div class="pipeline-flow-row">
+<!-- Row 2: Pipeline + Trust Chain Side-by-Side -->
+<div class="hero-mid-row">
 
-  <div class="steps-panel" id="steps-panel">
-    <div class="steps-panel-label">Pipeline Execution</div>
-    <div class="steps-panel-meta" id="steps-meta">Ready</div>
-    <div class="steps-list" id="steps-list">
-      <div class="step-row" id="step-row-0"><span class="step-icon" id="step-icon-0">○</span><span>Checkout</span></div>
-      <div class="step-row" id="step-row-1"><span class="step-icon" id="step-icon-1">○</span><span>Install OPA sft CLI</span></div>
-      <div class="step-row" id="step-row-2"><span class="step-icon" id="step-icon-2">○</span><span>Configure sft</span></div>
-      <div class="step-row" id="step-row-3"><span class="step-icon" id="step-icon-3">○</span><span>Request GitHub OIDC Token</span></div>
-      <div class="step-row" id="step-row-4"><span class="step-icon" id="step-icon-4">○</span><span>Authenticate with OPA Workload Identity</span></div>
-      <div class="step-row" id="step-row-5"><span class="step-icon" id="step-icon-5">○</span><span>Update dashboard via brokered SSH</span></div>
-      <div class="step-row" id="step-row-6"><span class="step-icon" id="step-icon-6">○</span><span>Update session duration</span></div>
+  <div class="pipeline-row">
+    <div class="steps-panel" id="steps-panel">
+      <div class="steps-panel-label">Pipeline Execution</div>
+      <div class="steps-panel-meta" id="steps-meta">Ready</div>
+      <div class="steps-list" id="steps-list">
+        <div class="step-row" id="step-row-0"><span class="step-icon" id="step-icon-0">○</span><span>Checkout</span></div>
+        <div class="step-row" id="step-row-1"><span class="step-icon" id="step-icon-1">○</span><span>Install OPA sft CLI</span></div>
+        <div class="step-row" id="step-row-2"><span class="step-icon" id="step-icon-2">○</span><span>Configure sft</span></div>
+        <div class="step-row" id="step-row-3"><span class="step-icon" id="step-icon-3">○</span><span>Request GitHub OIDC Token</span></div>
+        <div class="step-row" id="step-row-4"><span class="step-icon" id="step-icon-4">○</span><span>Authenticate with OPA Workload Identity</span></div>
+        <div class="step-row" id="step-row-5"><span class="step-icon" id="step-icon-5">○</span><span>Update dashboard via brokered SSH</span></div>
+        <div class="step-row" id="step-row-6"><span class="step-icon" id="step-icon-6">○</span><span>Update session duration</span></div>
+      </div>
     </div>
   </div>
 
-  <div class="flow-column">
+  <div class="trust-chain-row">
     <div class="flow-label">Authentication Trust Chain</div>
     <div class="flow-track">
-
       <div class="flow-node" id="flow-github">
         <div class="flow-node-icon">⚙️</div>
         <div class="flow-node-title">GitHub Actions</div>
         <div class="flow-node-detail">OIDC JWT issued by platform</div>
         <div class="flow-node-check">✓ No stored keys</div>
       </div>
-
       <div class="flow-arrow">
         <div class="flow-arrow-line" id="flow-arrow-1"></div>
         <div class="flow-arrow-label">OIDC JWT</div>
       </div>
-
       <div class="flow-node" id="flow-opa">
         <div class="flow-node-icon">🛡️</div>
         <div class="flow-node-title">Okta Privileged Access</div>
         <div class="flow-node-detail">Validates JWT · issues token</div>
         <div class="flow-node-check">✓ Token issued</div>
       </div>
-
       <div class="flow-arrow">
         <div class="flow-arrow-line" id="flow-arrow-2"></div>
         <div class="flow-arrow-label">Ephemeral Creds</div>
       </div>
-
       <div class="flow-node" id="flow-server">
         <div class="flow-node-icon">🖥️</div>
         <div class="flow-node-title">Target Server</div>
         <div class="flow-node-detail">Ephemeral cert · JIT account</div>
         <div class="flow-node-check">✓ JIT Account</div>
       </div>
-
     </div>
   </div>
 
@@ -1885,16 +1847,6 @@
   }
 
   function renderState(s) {
-    // Hero run number
-    const runNum = s.workflow_run_number || 0;
-    const credEl = document.getElementById('cred-count');
-    credEl.textContent = runNum ? '#' + runNum : '—';
-    credEl.className = 'cred-counter' + (s.status === 'success' ? ' deployed' : '');
-    const runTsEl = document.getElementById('hero-run-ts');
-    if (runTsEl) {
-      runTsEl.textContent = s.last_deploy ? s.last_deploy : 'No deployments yet';
-    }
-
     // Hero status — only update if not currently deploying (don't overwrite blue state)
     const statusEl = document.getElementById('deploy-status');
     const tsEl = document.getElementById('deploy-timestamp');
@@ -2525,7 +2477,7 @@
     if (sshUuidRow) sshUuidRow.style.display = 'none';
     setFlowActive(false);
     initSteps();
-    const preservedCount = parseInt(document.getElementById('cred-count').textContent.replace('#', ''), 10) || 0;
+    const preservedCount = parseInt(document.getElementById('ev-run-number').textContent, 10) || 0;
     renderState({ ...BLANK_STATE, workflow_run_number: preservedCount });
   }
 
