@@ -1294,7 +1294,7 @@
 <div class="data-row">
 
   <div class="card" id="card-identity">
-    <div class="card-label">Workload Account</div>
+    <div class="card-label">Workload Account <span class="info-icon-wrapper"><span class="info-icon">i</span><div class="info-tooltip">OPA automatically prefixes all workload Unix/Linux account names with <code>wl_</code> (e.g., <code>wl_github_actions</code>). This visually distinguishes JIT workload accounts from human accounts in the Okta System Log, on the target server, and in any SIEM integration.</div></span></div>
     <div class="card-value">
       <span class="wl-badge" id="wl-badge" style="display:none">WL</span><span id="deployed-by">—</span>
     </div>
@@ -1311,7 +1311,7 @@
 
 <!-- ── Evidence: Run Context ─────────────────────────────────────── -->
 <div class="evidence-section" id="section-deployment">
-  <div class="evidence-section-title">Run Context</div>
+  <div class="evidence-section-title">Run Context <span class="info-icon-wrapper"><span class="info-icon">i</span><div class="info-tooltip">Details from the GitHub Actions runner environment: the ephemeral Ubuntu compute host that executed this pipeline, its public egress IP, and the exact commit that triggered the run. This is the untrusted origin — OPA never relies on this context for access decisions; trust is established entirely through the cryptographic OIDC JWT.</div></span></div>
   <div class="evidence-grid" style="grid-template-columns: 1fr 1fr 1fr;">
     <div class="evidence-card">
       <div class="evidence-field">
@@ -1366,7 +1366,7 @@
         <span class="evidence-step-num">1</span>GitHub OIDC Token
         <span class="info-icon-wrapper">
           <span class="info-icon">i</span>
-          <div class="info-tooltip">The CI/CD runner requests a signed JWT directly from GitHub's OIDC endpoint — no stored secret needed. This token cryptographically proves the job's identity: which repository, branch, and workflow triggered it. OPA validates this token against the Workload Connection's JWKS URL and required claims before issuing any access.</div>
+          <div class="info-tooltip">The GitHub Actions runner requests a signed JWT directly from GitHub's platform OIDC endpoint — no stored credentials needed. This token cryptographically attests the job's runtime context: repository, branch, workflow, and triggering actor. OPA validates it against the Workload Connection's configured JWKS URL and required claims before issuing any access token.</div>
         </span>
       </div>
     </div>
@@ -1413,7 +1413,7 @@
         <span class="evidence-step-num">2</span>OPA Access Token
         <span class="info-icon-wrapper">
           <span class="info-icon">i</span>
-          <div class="info-tooltip">After validating the GitHub OIDC token, OPA issues its own short-lived access token (TTL configured per Workload Connection). This token represents the workload's authenticated identity within OPA and is used to request brokered SSH access. Optionally, <code>--role-hint</code> can be passed to <code>sft workload authenticate</code> to pre-select the Workload Role. It cannot be refreshed — the workload must re-authenticate from scratch when it expires.</div>
+          <div class="info-tooltip">After validating the GitHub OIDC JWT, OPA issues a short-lived access token to the authenticated Workload Principal. The TTL is configured per Workload Connection (not a system default). This token is non-refreshable — the workload must fully re-authenticate when it expires. Pass <code>--role-hint</code> to <code>sft workload authenticate</code> to pre-select the target Workload Role.</div>
         </span>
       </div>
       <span class="ttl-badge" id="opa-ttl-badge" style="display:none"></span>
@@ -1461,7 +1461,7 @@
         <span class="evidence-step-num">3</span>SSH Connection
         <span class="info-icon-wrapper">
           <span class="info-icon">i</span>
-          <div class="info-tooltip">Using the OPA access token, the <strong>sft</strong> CLI requests a just-in-time SSH certificate and ephemeral account on the target server. The account (<strong>wl_</strong> prefixed) is created at job start and torn down immediately on completion. No standing SSH keys or persistent accounts are used at any point.</div>
+          <div class="info-tooltip">Using the OPA access token, the <code>sft</code> CLI requests a brokered SSH session. OPA evaluates the security policy attached to the Workload Role and, if authorized, issues an ephemeral SSH client certificate and creates a JIT Unix account prefixed with <code>wl_</code> on the target server. The account is torn down immediately when the session ends — no standing SSH keys or persistent accounts exist at any point.</div>
         </span>
       </div>
     </div>
@@ -1488,6 +1488,10 @@
     <div class="evidence-card-header">
       <div class="evidence-step-label">
         <span class="evidence-step-num">4</span>OPA Audit Event
+        <span class="info-icon-wrapper">
+          <span class="info-icon">i</span>
+          <div class="info-tooltip">Every workload authentication and SSH session generates structured events in the Okta System Log — no custom instrumentation required. <code>pam.user_creds.issue</code> records the token issuance (actor type: WorkloadPrincipal). <code>pam.server.ssh_login</code> records SSH session establishment (actor: the <code>wl_</code> account). Both events are pulled live from the Okta System Log API and displayed here.</div>
+        </span>
       </div>
     </div>
 
@@ -1584,100 +1588,115 @@
 <!-- Footer -->
 <footer>
   <span class="footer-center"><span class="okta-badge">OPA</span>Powered by Okta Privileged Access · Workload Identity for Automation</span>
-  <button class="details-btn" id="details-btn" onclick="document.getElementById('details-modal').classList.add('open')">How it works</button>
+  <button class="details-btn" id="details-btn" onclick="document.getElementById('details-modal').classList.add('open')">View Architecture</button>
   <span id="footer-count">Deployments: 0</span>
 </footer>
 
-<!-- How It Works Modal -->
+<!-- Architecture Modal -->
 <div class="details-modal" id="details-modal">
   <div class="details-backdrop" onclick="document.getElementById('details-modal').classList.remove('open')"></div>
   <div class="details-panel">
     <div class="details-header">
-      <div class="details-title">How OPA Workload Identity Works</div>
+      <div class="details-title">OPA Workload Identity — Architecture Overview</div>
       <button class="details-close" onclick="document.getElementById('details-modal').classList.remove('open')">✕</button>
     </div>
     <div class="details-body">
 
       <!-- Section 1: The Problem -->
       <div>
-        <div class="details-section-title">The Problem</div>
+        <div class="details-section-title">The Problem With Static Credentials</div>
         <p style="font-size:13px;color:#1d1d21;line-height:1.7">
-          Traditional automation relies on <strong>static API keys</strong> stored in environment variables or secrets managers. This creates compounding risk:
+          Traditional CI/CD automation relies on <strong>static API keys or SSH keys</strong> stored in environment variables, secrets managers, or source control. This model has compounding security flaws:
         </p>
         <ul style="font-size:13px;color:#1d1d21;line-height:1.9;margin-top:10px;padding-left:20px">
-          <li><strong>Secret Zero</strong> — something must still hold the initial credential</li>
-          <li><strong>Standing access</strong> — a long-lived key is a persistent attack surface 24/7</li>
-          <li><strong>Rotation burden</strong> — managing hundreds of rotating keys across workloads is operationally expensive</li>
-          <li><strong>Blast radius</strong> — a leaked key grants standing access until manually revoked</li>
+          <li><strong>Secret Zero</strong> — something must hold the initial credential, creating a bootstrapping problem that is never fully solved</li>
+          <li><strong>Standing access</strong> — a long-lived key is a persistent attack surface, valid 24/7 whether or not a job is running</li>
+          <li><strong>Rotation burden</strong> — managing, rotating, and auditing hundreds of keys across workloads is operationally expensive and error-prone</li>
+          <li><strong>Blast radius</strong> — a leaked key grants standing access to every system it authorizes until manually revoked</li>
         </ul>
       </div>
 
       <!-- Section 2: The Solution -->
       <div>
-        <div class="details-section-title">The Solution</div>
+        <div class="details-section-title">The Solution: Federated Workload Identity</div>
         <p style="font-size:13px;color:#1d1d21;line-height:1.7">
-          OPA Workload Identity shifts from <em>"you have a secret"</em> to <em>"you are who you say you are."</em> Workloads prove their identity using <strong>cryptographically signed JWTs</strong> issued by their native platform (GitHub Actions, GitLab CI, GCP, CircleCI). OPA validates the token against a pre-configured trust relationship.
+          OPA Workload Identity shifts the security model from <em>"you have a secret"</em> to <em>"you are cryptographically who you say you are."</em> Workloads prove their identity using <strong>signed JWTs issued by their native platform</strong> (GitHub Actions, GitLab CI, GCP, CircleCI, or any JWKS-compliant provider). OPA validates the token against a pre-configured trust relationship called a <strong>Workload Connection</strong> — no secrets are stored anywhere in the pipeline.
         </p>
-        <p style="font-size:13px;color:#1d1d21;line-height:1.7;margin-top:10px">
-          <strong>No static keys. No Secret Zero. No standing privilege.</strong>
+        <p style="font-size:13px;color:#6e6e78;line-height:1.7;margin-top:10px;font-style:italic">
+          No static keys. No Secret Zero. No standing privilege. Every deployment above is proof.
         </p>
       </div>
 
-      <!-- Section 3: The Authentication Chain -->
+      <!-- Section 3: What Just Happened -->
       <div>
-        <div class="details-section-title">The Authentication Chain</div>
+        <div class="details-section-title">What This Dashboard Just Did</div>
         <div class="chain-steps">
           <div class="chain-step">
             <div class="chain-step-num">1</div>
-            <div class="chain-step-text"><strong>GitHub Actions requests an OIDC JWT</strong> directly from GitHub's platform endpoint. No stored secret is needed — the platform signs the token based on the job's runtime context.</div>
+            <div class="chain-step-text"><strong>GitHub issued an OIDC JWT to the Actions runner.</strong> The runner called GitHub's platform OIDC endpoint (<code>$ACTIONS_ID_TOKEN_REQUEST_URL</code>) and received a signed JWT attesting its runtime context: repository, branch, workflow, SHA, and triggering actor. No stored credential was used. The raw token and its decoded claims are shown in Step 1 above.</div>
           </div>
           <div class="chain-step">
             <div class="chain-step-num">2</div>
-            <div class="chain-step-text"><strong>The workflow passes the JWT to <code>sft workload authenticate</code></strong> along with the team name and Workload Connection name. The <code>sft</code> CLI submits the JWT to OPA for validation.</div>
+            <div class="chain-step-text"><strong>The <code>sft</code> CLI exchanged the GitHub JWT for an OPA access token.</strong> The workflow called <code>sft workload authenticate --team farley --connection github-actions-prod --role-hint github_actions --jwt-env GITHUB_OIDC_TOKEN</code>. OPA fetched GitHub's JWKS, verified the JWT signature, validated required claims against the Workload Connection configuration, and issued a short-lived OPA access token to the authenticated <strong>Workload Principal</strong>. The token's claims are decoded and displayed in Step 2 above.</div>
           </div>
           <div class="chain-step">
             <div class="chain-step-num">3</div>
-            <div class="chain-step-text"><strong>OPA validates the JWT</strong> against the Workload Connection's configured JWKS URL and required claims (e.g., <code>repository</code>, <code>ref</code>, <code>workflow</code>). If any claim fails, authentication is rejected.</div>
+            <div class="chain-step-text"><strong>OPA brokered a JIT SSH session to the target server.</strong> The workflow called <code>sft ssh --team farley --workload-role github_actions target-server-01</code>. OPA evaluated the security policy attached to the <code>github_actions</code> Workload Role, issued an ephemeral SSH client certificate, and created a JIT Unix account (<code>wl_github_actions</code>) on the target server. The job wrote <code>state.json</code> under that account, then the session closed and the account was torn down. No persistent SSH key was used.</div>
           </div>
           <div class="chain-step">
             <div class="chain-step-num">4</div>
-            <div class="chain-step-text"><strong>OPA issues a short-lived access token</strong> (TTL configured per Workload Connection). This token is non-refreshable — the workload must fully re-authenticate when it expires. No token can be revoked individually; deactivating the Workload Connection blocks all future issuance.</div>
-          </div>
-          <div class="chain-step">
-            <div class="chain-step-num">5</div>
-            <div class="chain-step-text"><strong><code>sft ssh</code> uses the OPA token</strong> to request a brokered SSH session. OPA evaluates the attached security policy and, if authorized, issues an ephemeral SSH client certificate for the target server.</div>
-          </div>
-          <div class="chain-step">
-            <div class="chain-step-num">6</div>
-            <div class="chain-step-text"><strong>A JIT account (<code>wl_github_actions</code>) is created</strong> on the target server at job start. The job executes under this account, then the account is torn down immediately on completion. No persistent accounts or SSH keys remain.</div>
+            <div class="chain-step-text"><strong>The dashboard fetched cryptographic proof from the Okta System Log.</strong> Two structured events were generated automatically: <code>pam.user_creds.issue</code> (token issuance, actor type <strong>WorkloadPrincipal</strong>) and <code>pam.server.ssh_login</code> (SSH session establishment, actor: <code>wl_github_actions</code>). Both events were pulled live via the Okta System Log API using a time-bounded query anchored to the OPA token's <code>iat</code> claim — no manual log search required.</div>
           </div>
         </div>
       </div>
 
-      <!-- Section 4: Key Concepts -->
+      <!-- Section 4: Administrative Configuration -->
+      <div>
+        <div class="details-section-title">Administrative Configuration (4-Phase Model)</div>
+        <div class="concept-grid">
+          <div class="concept-card">
+            <div class="concept-card-label">Phase 1 — Connect</div>
+            <div class="concept-card-text">A DevOps admin creates a <strong>Workload Connection</strong> in Draft status. Specifies the connection name, token TTL, JWKS URL (e.g., <code>https://token.actions.githubusercontent.com/.well-known/jwks</code>), and required JWT claims that must be present for authentication to succeed.</div>
+          </div>
+          <div class="concept-card">
+            <div class="concept-card-label">Phase 2 — Governance</div>
+            <div class="concept-card-text">A Security admin reviews and promotes the Workload Connection to <strong>Active</strong> status. This split-duty model enforces separation of concerns — DevOps cannot self-approve trust relationships into production. Inactive connections block all new token issuance. Allow ~5 minutes after activation for OPA to refresh before testing.</div>
+          </div>
+          <div class="concept-card">
+            <div class="concept-card-label">Phase 3 — Logic</div>
+            <div class="concept-card-text">The Security admin creates a <strong>Workload Role</strong> linked to the Connection, optionally scoped by JWT claim filters. The Workload Role is attached to an OPA security policy — the same policy framework used for human access. This policy defines which target servers the workload can reach.</div>
+          </div>
+          <div class="concept-card">
+            <div class="concept-card-label">Phase 4 — Deploy</div>
+            <div class="concept-card-text">The DevOps admin injects <code>sft workload authenticate</code> into the CI/CD pipeline and sets <code>OPA_ADDR</code>. The resulting OPA access token is used for all subsequent <code>sft ssh</code> calls. No secrets are stored — the pipeline is self-contained and auditable from first principles.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 5: Key Concepts -->
       <div>
         <div class="details-section-title">Key Concepts</div>
         <div class="concept-grid">
           <div class="concept-card">
             <div class="concept-card-label">Workload Connection</div>
-            <div class="concept-card-text">Created in Draft by a DevOps admin; promoted to Active by a Security admin before tokens can be issued. Defined by a JWKS URL and required JWT claims. Allow ~5 minutes after activation for OPA to refresh.</div>
+            <div class="concept-card-text">The trust anchor between OPA and an external identity provider. Created in Draft by a DevOps admin; promoted to Active by a Security admin. Configured with a JWKS URL and required JWT claims. Deactivating a Connection immediately blocks all new token issuance — no individual revocation is needed.</div>
           </div>
           <div class="concept-card">
             <div class="concept-card-label">Workload Role</div>
-            <div class="concept-card-text">Groups ephemeral workloads by shared characteristics. Acts as the principal in OPA security policies — the same policy framework used for human access. Optional JWT claim filters scope which workloads match the role.</div>
+            <div class="concept-card-text">Groups ephemeral workloads by shared characteristics and acts as the principal in OPA security policies. Optional JWT claim conditions scope which workloads match the role. The <code>--role-hint</code> flag on <code>sft workload authenticate</code> pre-selects the intended role at authentication time.</div>
           </div>
           <div class="concept-card">
-            <div class="concept-card-label">wl_ Prefix</div>
-            <div class="concept-card-text">All workload Unix/Linux accounts are auto-prefixed with <code>wl_</code> (e.g., <code>wl_github_actions</code>). This prefix visually distinguishes ephemeral workload accounts from human accounts in audit logs and on the target server.</div>
+            <div class="concept-card-label">wl_ Account Prefix</div>
+            <div class="concept-card-text">All workload Unix/Linux accounts are auto-prefixed with <code>wl_</code> (e.g., <code>wl_github_actions</code>). This visually distinguishes JIT workload accounts from human accounts in audit logs, on the target server, and in any SIEM integration. The account exists only for the duration of the SSH session.</div>
           </div>
           <div class="concept-card">
-            <div class="concept-card-label">OPA_TOKEN</div>
-            <div class="concept-card-text">The short-lived access token exported after successful workload authentication. Used as the credential for <code>sft ssh</code>. Non-refreshable by design — expiration forces full re-attestation, ensuring fresh cryptographic proof of identity for every session.</div>
+            <div class="concept-card-label">Non-Refreshable Tokens</div>
+            <div class="concept-card-text">OPA access tokens issued to Workload Principals cannot be refreshed. Expiration forces full re-attestation via the platform OIDC endpoint, ensuring fresh cryptographic proof of identity for every session. This is a deliberate security constraint, not a limitation. MFA and Access Requests must not be enabled on workload policies — headless workloads cannot respond to prompts.</div>
           </div>
         </div>
       </div>
 
-      <!-- Section 5: Zero Standing Privilege -->
+      <!-- Section 6: Zero Standing Privilege -->
       <div>
         <div class="details-section-title">Zero Standing Privilege</div>
         <p style="font-size:13px;color:#1d1d21;line-height:1.7">
@@ -1685,7 +1704,7 @@
         </p>
         <ul style="font-size:13px;color:#1d1d21;line-height:1.9;margin-top:10px;padding-left:20px">
           <li>The OIDC JWT exists only during the GitHub Actions job execution window</li>
-          <li>The OPA access token is issued per-authentication and expires in 300s</li>
+          <li>The OPA access token is issued per-authentication and expires at the TTL configured on the Workload Connection</li>
           <li>The SSH certificate is ephemeral — valid only for the duration of the brokered session</li>
           <li>The <code>wl_</code> account on the target server is created at job start and destroyed at job end</li>
           <li>Removing a Workload Role from a security policy terminates active SSH sessions immediately</li>
@@ -1693,20 +1712,20 @@
         </ul>
       </div>
 
-      <!-- Section 6: Audit Trail -->
+      <!-- Section 7: Audit Trail -->
       <div>
         <div class="details-section-title">Audit Trail</div>
         <p style="font-size:13px;color:#1d1d21;line-height:1.7">
-          Every workload authentication and SSH session generates structured events in the Okta System Log, enabling full traceability without any custom instrumentation:
+          Every workload authentication and SSH session generates structured events in the Okta System Log automatically — no custom instrumentation required. This dashboard pulls both events live via the System Log API, anchored to the OPA token's <code>iat</code> claim:
         </p>
         <div class="concept-grid" style="margin-top:12px">
           <div class="concept-card">
             <div class="concept-card-label">pam.user_creds.issue</div>
-            <div class="concept-card-text">Fired when OPA issues the short-lived access token. Actor type is <strong>WorkloadPrincipal</strong>. Contains the Workload Connection name, team, and token TTL. Queryable in the Okta Admin Console or via System Log API.</div>
+            <div class="concept-card-text">Fired when OPA issues the short-lived access token to the Workload Principal. Contains: actor type (<strong>WorkloadPrincipal</strong>), actor ID (the JWT <code>sub</code> claim), Workload Connection name, team, client IP, and token TTL. This is the primary record of authentication.</div>
           </div>
           <div class="concept-card">
             <div class="concept-card-label">pam.server.ssh_login</div>
-            <div class="concept-card-text">Fired on brokered SSH session establishment. Actor is the <strong><code>wl_</code> user</strong> (e.g., <code>wl_github_actions</code>). Records target host, session start time, and the security policy that authorized access.</div>
+            <div class="concept-card-text">Fired on brokered SSH session establishment. Actor is the <strong><code>wl_</code> JIT account</strong> (e.g., <code>wl_github_actions</code>). Records the target server, session timestamp, and outcome. Together with <code>pam.user_creds.issue</code>, these two events provide a complete, tamper-evident audit trail from JWT issuance through session close.</div>
           </div>
         </div>
       </div>
