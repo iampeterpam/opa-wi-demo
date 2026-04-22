@@ -80,7 +80,7 @@
       border-bottom: 1px solid #e1e3e8;
       padding: 28px 40px 20px;
       display: grid;
-      grid-template-columns: 1fr auto 1fr;
+      grid-template-columns: 1fr 1fr;
       align-items: center;
       gap: 24px;
     }
@@ -117,25 +117,6 @@
       font-size: 13px;
       color: #6e6e78;
       margin-top: 4px;
-    }
-
-    .hero-center {
-      text-align: center;
-    }
-
-    .hero-customer-label {
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: #0061F2;
-      margin-bottom: 6px;
-    }
-
-    .hero-customer-name {
-      font-size: 28px;
-      font-weight: 500;
-      color: #1d1d21;
     }
 
     .hero-right {
@@ -193,12 +174,18 @@
       50% { opacity: 0.35; }
     }
 
-    /* ── Row 2: Security Flow ───────────────────────────────────── */
+    /* ── Row 2: Pipeline + Flow Side-by-Side ────────────────────── */
 
-    .flow-row {
-      padding: 24px 40px;
-      border-bottom: 1px solid #e1e3e8;
+    .pipeline-flow-row {
+      display: flex;
+      align-items: stretch;
       background: #ffffff;
+      border-bottom: 1px solid #e1e3e8;
+    }
+
+    .flow-column {
+      flex: 1;
+      padding: 24px 40px;
     }
 
     .flow-label {
@@ -407,10 +394,7 @@
       padding: 16px 40px;
       border-bottom: 1px solid #e1e3e8;
       background: #f4f4f4;
-      display: none;
     }
-
-    .evidence-section.visible { display: block; }
 
     #section-oidc { border-top: 3px solid #e1e3e8; }
 
@@ -675,6 +659,117 @@
       letter-spacing: 0.3px;
     }
 
+    .details-btn {
+      background: none;
+      border: 1px solid #e1e3e8;
+      border-radius: 6px;
+      padding: 4px 14px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #6e6e78;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .details-btn:hover { border-color: #0061F2; color: #0061F2; }
+
+    .details-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+    }
+    .details-modal.open { display: flex; align-items: center; justify-content: center; }
+
+    .details-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(29,29,33,0.55);
+    }
+
+    .details-panel {
+      position: relative;
+      background: #ffffff;
+      border-radius: 12px;
+      width: 720px;
+      max-width: calc(100vw - 48px);
+      max-height: calc(100vh - 80px);
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.22);
+      overflow: hidden;
+    }
+
+    .details-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 28px 16px;
+      border-bottom: 1px solid #e1e3e8;
+      flex-shrink: 0;
+    }
+
+    .details-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #1d1d21;
+    }
+
+    .details-close {
+      background: none;
+      border: none;
+      font-size: 16px;
+      color: #9e9ea8;
+      cursor: pointer;
+      padding: 4px;
+      line-height: 1;
+    }
+    .details-close:hover { color: #1d1d21; }
+
+    .details-body {
+      overflow-y: auto;
+      padding: 24px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    .details-section-title {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #0061F2;
+      margin-bottom: 10px;
+    }
+
+    .chain-steps { display: flex; flex-direction: column; gap: 10px; }
+    .chain-step { display: flex; gap: 14px; align-items: flex-start; }
+    .chain-step-num {
+      flex-shrink: 0;
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      background: #0061F2;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .chain-step-text { font-size: 13px; color: #1d1d21; line-height: 1.6; padding-top: 3px; }
+    .chain-step-text strong { color: #1d1d21; }
+
+    .concept-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .concept-card {
+      background: #f4f4f4;
+      border: 1px solid #e1e3e8;
+      border-radius: 8px;
+      padding: 14px 16px;
+    }
+    .concept-card-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
+      text-transform: uppercase; color: #6e6e78; margin-bottom: 6px;
+    }
+    .concept-card-text { font-size: 12px; color: #1d1d21; line-height: 1.6; }
+
     .okta-badge {
       display: inline-block;
       background: #0061F2;
@@ -687,6 +782,423 @@
       text-transform: uppercase;
       margin-right: 6px;
       vertical-align: middle;
+    }
+
+    /* ── Control Bar ─────────────────────────────────────────────── */
+
+    .control-bar {
+      background: #ffffff;
+      border-bottom: 1px solid #e1e3e8;
+      padding: 10px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .running-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: #6e6e78;
+      margin-right: 8px;
+    }
+
+    .spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid #e1e3e8;
+      border-top-color: #0061F2;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ── Responsive ──────────────────────────────────────────────── */
+
+    @media (max-width: 768px) {
+
+      .opa-nav {
+        padding: 0 16px;
+        flex-wrap: wrap;
+        height: auto;
+        min-height: 48px;
+      }
+
+      .control-bar {
+        padding: 10px 16px;
+      }
+
+      .hero {
+        padding: 20px 16px 16px;
+        grid-template-columns: 1fr;
+      }
+
+      .hero-right {
+        display: none;
+      }
+
+      /* Stack pipeline + trust chain vertically */
+      .pipeline-flow-row {
+        flex-direction: column;
+      }
+
+      .steps-panel {
+        border-right: none;
+        border-bottom: 1px solid #e1e3e8;
+      }
+
+      .flow-column {
+        padding: 16px;
+        width: 100%;
+        box-sizing: border-box;
+      }
+
+      /* Trust chain: stack nodes vertically */
+      .flow-track {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0;
+      }
+
+      .flow-node {
+        width: 100%;
+      }
+
+      /* Rotate arrows to point downward */
+      .flow-arrow {
+        flex: 0 0 36px;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .flow-arrow-line {
+        width: 2px;
+        height: 32px;
+      }
+
+      .flow-arrow-line::after {
+        right: auto;
+        left: 50%;
+        top: auto;
+        bottom: -6px;
+        transform: translateX(-50%);
+        border-left: 6px solid transparent;
+        border-right: 6px solid transparent;
+        border-top: 8px solid #e1e3e8;
+        border-bottom: none;
+      }
+
+      .flow-arrow-line.active::after {
+        border-top-color: #0061F2;
+        border-left-color: transparent;
+      }
+
+      /* Summary cards: stack vertically */
+      .data-row {
+        grid-template-columns: 1fr;
+      }
+
+      /* Evidence sections */
+      .evidence-section {
+        padding: 14px 16px;
+      }
+
+      /* Evidence grid: single column */
+      .evidence-grid {
+        grid-template-columns: 1fr !important;
+      }
+
+      /* Audit row: stack label above value */
+      .audit-row {
+        grid-template-columns: 1fr;
+        gap: 2px;
+      }
+
+      .audit-field-label {
+        color: #9e9ea8;
+        font-size: 10px;
+      }
+
+      /* JWT strings: prevent horizontal blowout */
+      .evidence-value,
+      .audit-field-value,
+      #oidc-full,
+      #opa-full {
+        word-break: break-all;
+        overflow-wrap: anywhere;
+      }
+
+      /* Token panel: stack vertically on mobile */
+      .token-panel {
+        flex-direction: column;
+      }
+
+      .token-timestamps {
+        flex-wrap: wrap;
+        gap: 14px;
+      }
+
+      .audit-meta-row {
+        flex-direction: column;
+        gap: 4px;
+      }
+    }
+
+    @media (max-width: 480px) {
+
+      .flow-node {
+        padding: 12px 14px;
+      }
+
+      .flow-node-title {
+        font-size: 12px;
+      }
+
+      .evidence-step-num {
+        padding: 2px 6px;
+        font-size: 9px;
+      }
+
+      #cred-count {
+        font-size: 36px;
+      }
+    }
+
+    .control-btn {
+      border: 1px solid #e1e3e8;
+      border-radius: 6px;
+      padding: 7px 18px;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      background: #ffffff;
+      color: #1d1d21;
+      transition: border-color 0.15s, color 0.15s, opacity 0.15s;
+    }
+
+    .control-btn:hover:not(:disabled) { border-color: #9e9ea8; }
+
+    .control-btn.primary {
+      background: #0061F2;
+      border-color: #0061F2;
+      color: #ffffff;
+    }
+
+    .control-btn.primary:hover:not(:disabled) {
+      background: #0052cc;
+      border-color: #0052cc;
+    }
+
+    .control-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    /* ── Pipeline Step Progress Panel ───────────────────────────── */
+
+    .steps-panel {
+      flex: 0 0 52%;
+      border-right: 1px solid #e1e3e8;
+      border-bottom: none;
+      padding: 14px 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .steps-panel-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #6e6e78;
+      margin-bottom: 0;
+    }
+
+    .steps-panel-meta {
+      font-size: 11px;
+      color: #9e9ea8;
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    .steps-panel-meta.active {
+      color: #0061F2;
+    }
+
+    .steps-panel-meta.completed {
+      color: #1e7e34;
+    }
+
+    .steps-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .step-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: #9e9ea8;
+      transition: color 0.3s ease;
+    }
+
+    .step-row.active {
+      color: #1d1d21;
+      font-weight: 700;
+    }
+
+    .step-row.done {
+      color: #1e7e34;
+    }
+
+    .step-row.done-dim {
+      color: #6e9e6e;
+    }
+
+    .step-row.failed {
+      color: #c0392b;
+    }
+
+    .step-icon {
+      font-size: 14px;
+      width: 18px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .step-spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid #e1e3e8;
+      border-top-color: #0061F2;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      flex-shrink: 0;
+    }
+
+    /* ── Evidence flash on data arrival ────────────────────────── */
+
+    .evidence-card, .evidence-card-full {
+      transition: background 0.6s ease;
+    }
+
+    .evidence-card.just-loaded, .evidence-card-full.just-loaded {
+      background: #e8f0fe;
+    }
+
+    /* ── Hero deploying state ───────────────────────────────────── */
+
+    .hero-status-value.deploying {
+      color: #0061F2;
+      font-size: 20px;
+    }
+
+    /* ── Audit Event Section ─────────────────────────────────── */
+
+    .audit-event-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .audit-event-type {
+      font-size: 12px;
+      font-weight: 700;
+      color: #0061F2;
+      background: #e8f0fe;
+      padding: 2px 8px;
+      border-radius: 3px;
+      letter-spacing: 0.01em;
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    }
+
+    .audit-outcome-badge {
+      font-size: 10px;
+      font-weight: 700;
+      color: #1e7e34;
+      background: #d4edda;
+      border: 1px solid #a3d9a5;
+      padding: 2px 7px;
+      border-radius: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .audit-meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      font-size: 10px;
+      color: #6e6e78;
+      margin-bottom: 14px;
+    }
+
+    .audit-meta-label {
+      color: #9e9ea8;
+      margin-right: 3px;
+    }
+
+    .audit-fields {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .audit-row {
+      display: grid;
+      grid-template-columns: 160px 1fr;
+      gap: 16px;
+      padding: 5px 0;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .audit-row:last-child {
+      border-bottom: none;
+    }
+
+    .audit-field-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #6e6e78;
+    }
+
+    .audit-field-value {
+      font-size: 11px;
+      color: #1d1d21;
+      word-break: break-all;
+    }
+
+    .audit-actor-type-badge {
+      font-size: 11px;
+      font-weight: 700;
+      color: #0061F2;
+      background: #e8f0fe;
+      border: 1px solid #bfdbfe;
+      padding: 1px 7px;
+      border-radius: 3px;
+    }
+
+    .audit-client-badge {
+      font-size: 10px;
+      font-weight: 700;
+      color: #7c3aed;
+      background: #f3f0ff;
+      border: 1px solid #ddd6fe;
+      padding: 1px 7px;
+      border-radius: 3px;
     }
   </style>
 </head>
@@ -705,17 +1217,21 @@
   </div>
 </nav>
 
+<!-- Control Bar -->
+<div class="control-bar">
+  <div class="running-indicator" id="running-indicator" style="display:none">
+    <div class="spinner"></div><span>Workflow running…</span>
+  </div>
+  <button class="control-btn" id="clear-btn" onclick="onClear()">✕ Clear</button>
+  <button class="control-btn primary" id="run-btn" onclick="onRunPipeline()">▶ Deploy</button>
+</div>
+
 <!-- Row 1: Hero Banner -->
 <div class="hero">
   <div class="hero-left">
     <div class="hero-status-label">Deployment Status</div>
     <div class="hero-status-value awaiting" id="deploy-status">Awaiting Deployment…</div>
     <div class="hero-timestamp" id="deploy-timestamp">—</div>
-  </div>
-
-  <div class="hero-center">
-    <div class="hero-customer-label">Customer</div>
-    <div class="hero-customer-name" id="customer-name">Loading…</div>
   </div>
 
   <div class="hero-right">
@@ -725,76 +1241,85 @@
 
 </div>
 
-<!-- Row 2: Security Flow Visualization -->
-<div class="flow-row">
-  <div class="flow-label">Authentication Trust Chain</div>
-  <div class="flow-track">
+<!-- Row 2: Pipeline + Flow Side-by-Side -->
+<div class="pipeline-flow-row">
 
-    <div class="flow-node" id="flow-github">
-      <div class="flow-node-icon">⚙️</div>
-      <div class="flow-node-title">GitHub Actions</div>
-      <div class="flow-node-detail">OIDC JWT issued by platform</div>
-      <div class="flow-node-check">✓ No stored keys</div>
-    </div>
-
-    <div class="flow-arrow">
-      <div class="flow-arrow-line" id="flow-arrow-1"></div>
-      <div class="flow-arrow-label">OIDC JWT</div>
-    </div>
-
-    <div class="flow-node" id="flow-opa">
-      <div class="flow-node-icon">🛡️</div>
-      <div class="flow-node-title">OPA Gateway</div>
-      <div class="flow-node-detail">Validates JWT · issues token</div>
-      <div class="flow-node-check">✓ Token issued</div>
-    </div>
-
-    <div class="flow-arrow">
-      <div class="flow-arrow-line" id="flow-arrow-2"></div>
-      <div class="flow-arrow-label">SSH Cert</div>
-    </div>
-
-    <div class="flow-node" id="flow-server">
-      <div class="flow-node-icon">🖥️</div>
-      <div class="flow-node-title">Target Server</div>
-      <div class="flow-node-detail">Ephemeral cert · JIT account</div>
-      <div class="flow-node-check">✓ JIT Account</div>
-    </div>
-
+  <div class="steps-panel" id="steps-panel">
+    <div class="steps-panel-label">Pipeline Execution</div>
+    <div class="steps-panel-meta" id="steps-meta">Ready</div>
+    <div class="steps-list" id="steps-list"></div>
   </div>
+
+  <div class="flow-column">
+    <div class="flow-label">Authentication Trust Chain</div>
+    <div class="flow-track">
+
+      <div class="flow-node" id="flow-github">
+        <div class="flow-node-icon">⚙️</div>
+        <div class="flow-node-title">GitHub Actions</div>
+        <div class="flow-node-detail">OIDC JWT issued by platform</div>
+        <div class="flow-node-check">✓ No stored keys</div>
+      </div>
+
+      <div class="flow-arrow">
+        <div class="flow-arrow-line" id="flow-arrow-1"></div>
+        <div class="flow-arrow-label">OIDC JWT</div>
+      </div>
+
+      <div class="flow-node" id="flow-opa">
+        <div class="flow-node-icon">🛡️</div>
+        <div class="flow-node-title">Okta Privileged Access</div>
+        <div class="flow-node-detail">Validates JWT · issues token</div>
+        <div class="flow-node-check">✓ Token issued</div>
+      </div>
+
+      <div class="flow-arrow">
+        <div class="flow-arrow-line" id="flow-arrow-2"></div>
+        <div class="flow-arrow-label">Ephemeral Creds</div>
+      </div>
+
+      <div class="flow-node" id="flow-server">
+        <div class="flow-node-icon">🖥️</div>
+        <div class="flow-node-title">Target Server</div>
+        <div class="flow-node-detail">Ephemeral cert · JIT account</div>
+        <div class="flow-node-check">✓ JIT Account</div>
+      </div>
+
+    </div>
+  </div>
+
 </div>
 
 <!-- Row 3: Data Cards -->
 <div class="data-row">
 
   <div class="card" id="card-identity">
-    <div class="card-label">Deployed By · OPA Connection</div>
+    <div class="card-label">Workload Account</div>
     <div class="card-value">
       <span class="wl-badge" id="wl-badge" style="display:none">WL</span><span id="deployed-by">—</span>
     </div>
-    <div class="card-sub" id="opa-connection">—</div>
+    <div class="card-sub" id="opa-connection" style="display:none"></div>
   </div>
 
   <div class="card" id="card-session">
-    <div class="card-label">Session Duration · Git Info</div>
+    <div class="card-label">Session Duration</div>
     <div class="card-value" id="session-duration">—</div>
-    <div class="card-sub" id="git-info">—</div>
   </div>
 
 </div>
 
 
-<!-- ── Evidence: Deployment Details ─────────────────────────────── -->
+<!-- ── Evidence: Run Context ─────────────────────────────────────── -->
 <div class="evidence-section" id="section-deployment">
-  <div class="evidence-section-title">Deployment Details</div>
-  <div class="evidence-grid">
+  <div class="evidence-section-title">Run Context</div>
+  <div class="evidence-grid" style="grid-template-columns: 1fr 1fr 1fr;">
     <div class="evidence-card">
       <div class="evidence-field">
         <div class="evidence-label">Workflow Run</div>
         <div class="evidence-value" id="ev-run-number">—</div>
       </div>
       <div class="evidence-field">
-        <div class="evidence-label">Run ID (link)</div>
+        <div class="evidence-label">Run ID</div>
         <div class="evidence-value" id="ev-run-id">—</div>
       </div>
       <div class="evidence-field">
@@ -816,13 +1341,6 @@
         <div class="evidence-value" id="ev-commit">—</div>
       </div>
     </div>
-  </div>
-</div>
-
-<!-- ── Evidence: GitHub Runner ───────────────────────────────────── -->
-<div class="evidence-section" id="section-runner">
-  <div class="evidence-section-title">GitHub Runner</div>
-  <div class="evidence-grid">
     <div class="evidence-card">
       <div class="evidence-field">
         <div class="evidence-label">Runner Hostname</div>
@@ -832,15 +1350,9 @@
         <div class="evidence-label">Runner Egress IP</div>
         <div class="evidence-value" id="ev-runner-ip">—</div>
       </div>
-    </div>
-    <div class="evidence-card">
       <div class="evidence-field">
         <div class="evidence-label">Executed At</div>
         <div class="evidence-value" id="ev-runner-executed-at">—</div>
-      </div>
-      <div class="evidence-field">
-        <div class="evidence-label">Session Duration</div>
-        <div class="evidence-value" id="ev-session-dur">—</div>
       </div>
     </div>
   </div>
@@ -901,7 +1413,7 @@
         <span class="evidence-step-num">2</span>OPA Access Token
         <span class="info-icon-wrapper">
           <span class="info-icon">i</span>
-          <div class="info-tooltip">After validating the GitHub OIDC token, OPA issues its own short-lived access token (default TTL: 300s). This token represents the workload's authenticated identity within OPA and is used to request brokered SSH access. It cannot be refreshed — the workload must re-authenticate from scratch when it expires.</div>
+          <div class="info-tooltip">After validating the GitHub OIDC token, OPA issues its own short-lived access token (TTL configured per Workload Connection). This token represents the workload's authenticated identity within OPA and is used to request brokered SSH access. Optionally, <code>--role-hint</code> can be passed to <code>sft workload authenticate</code> to pre-select the Workload Role. It cannot be refreshed — the workload must re-authenticate from scratch when it expires.</div>
         </span>
       </div>
       <span class="ttl-badge" id="opa-ttl-badge" style="display:none"></span>
@@ -970,11 +1482,238 @@
   </div>
 </div>
 
+<!-- ── Evidence: Step 4 — OPA Audit Event ──────────────────────── -->
+<div class="evidence-section" id="section-audit">
+  <div class="evidence-card-full" id="audit-card">
+    <div class="evidence-card-header">
+      <div class="evidence-step-label">
+        <span class="evidence-step-num">4</span>OPA Audit Event
+      </div>
+    </div>
+
+    <div class="audit-event-header">
+      <span class="audit-event-type">pam.user_creds.issue</span>
+      <span class="audit-outcome-badge" id="ev-audit-outcome">—</span>
+    </div>
+    <div style="font-size:11px;color:#6e6e78;margin-bottom:10px;">Cryptographic proof of the access event — pulled live from Okta System Log</div>
+
+    <div class="audit-meta-row">
+      <span><span class="audit-meta-label">Published</span><span id="ev-audit-published">—</span></span>
+      <span><span class="audit-meta-label">Severity</span> INFO</span>
+      <span id="ev-audit-uuid-row" style="display:none"><span class="audit-meta-label">UUID</span><span id="ev-audit-uuid" style="font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:10px;">—</span></span>
+    </div>
+
+    <div class="audit-fields">
+
+      <div class="evidence-label" style="margin-bottom:8px;">Actor</div>
+
+      <div class="audit-row">
+        <div class="audit-field-label">type</div>
+        <div class="audit-field-value" id="ev-audit-actor-type">—</div>
+      </div>
+      <div class="audit-row">
+        <div class="audit-field-label">id</div>
+        <div class="audit-field-value" id="ev-audit-actor-id">—</div>
+      </div>
+
+      <div class="evidence-label" style="margin: 12px 0 8px;">Access Details</div>
+
+      <div class="audit-row">
+        <div class="audit-field-label">client</div>
+        <div class="audit-field-value" id="ev-audit-client">—</div>
+      </div>
+      <div class="audit-row">
+        <div class="audit-field-label">connection</div>
+        <div class="audit-field-value" id="ev-audit-team">—</div>
+      </div>
+      <div class="audit-row">
+        <div class="audit-field-label">serverHostnames</div>
+        <div class="audit-field-value" id="ev-audit-server">—</div>
+      </div>
+      <div class="audit-row">
+        <div class="audit-field-label">clientIp</div>
+        <div class="audit-field-value" id="ev-audit-client-ip">—</div>
+      </div>
+      <div class="audit-row" id="ev-audit-x509-row" style="display:none">
+        <div class="audit-field-label">x509KeyFingerprint</div>
+        <div class="audit-field-value" id="ev-audit-x509" style="font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:10px;"></div>
+      </div>
+
+    </div>
+
+    <!-- pam.server.ssh_login sub-block -->
+    <div style="margin-top:16px;padding-top:14px;border-top:1px solid #e5e5ea;">
+      <div class="audit-event-header">
+        <span class="audit-event-type">pam.server.ssh_login</span>
+        <span class="audit-outcome-badge" id="ev-ssh-login-outcome">—</span>
+      </div>
+      <div style="font-size:11px;color:#6e6e78;margin-bottom:10px;">SSH session establishment — pulled live from Okta System Log</div>
+
+      <div class="audit-meta-row">
+        <span><span class="audit-meta-label">Published</span><span id="ev-ssh-login-published">—</span></span>
+        <span><span class="audit-meta-label">Severity</span> INFO</span>
+        <span id="ev-ssh-login-uuid-row" style="display:none"><span class="audit-meta-label">UUID</span><span id="ev-ssh-login-uuid" style="font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:10px;">—</span></span>
+      </div>
+
+      <div class="audit-fields">
+        <div class="evidence-label" style="margin-bottom:8px;">Actor</div>
+        <div class="audit-row">
+          <div class="audit-field-label">type</div>
+          <div class="audit-field-value" id="ev-ssh-login-actor-type">—</div>
+        </div>
+        <div class="audit-row">
+          <div class="audit-field-label">id</div>
+          <div class="audit-field-value" id="ev-ssh-login-actor-id">—</div>
+        </div>
+
+        <div class="evidence-label" style="margin: 12px 0 8px;">Session Details</div>
+        <div class="audit-row">
+          <div class="audit-field-label">target host</div>
+          <div class="audit-field-value" id="ev-ssh-login-host">—</div>
+        </div>
+        <div class="audit-row">
+          <div class="audit-field-label">security policy</div>
+          <div class="audit-field-value" id="ev-ssh-login-policy">—</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
 <!-- Footer -->
 <footer>
   <span class="footer-center"><span class="okta-badge">OPA</span>Powered by Okta Privileged Access · Workload Identity for Automation</span>
+  <button class="details-btn" id="details-btn" onclick="document.getElementById('details-modal').classList.add('open')">How it works</button>
   <span id="footer-count">Deployments: 0</span>
 </footer>
+
+<!-- How It Works Modal -->
+<div class="details-modal" id="details-modal">
+  <div class="details-backdrop" onclick="document.getElementById('details-modal').classList.remove('open')"></div>
+  <div class="details-panel">
+    <div class="details-header">
+      <div class="details-title">How OPA Workload Identity Works</div>
+      <button class="details-close" onclick="document.getElementById('details-modal').classList.remove('open')">✕</button>
+    </div>
+    <div class="details-body">
+
+      <!-- Section 1: The Problem -->
+      <div>
+        <div class="details-section-title">The Problem</div>
+        <p style="font-size:13px;color:#1d1d21;line-height:1.7">
+          Traditional automation relies on <strong>static API keys</strong> stored in environment variables or secrets managers. This creates compounding risk:
+        </p>
+        <ul style="font-size:13px;color:#1d1d21;line-height:1.9;margin-top:10px;padding-left:20px">
+          <li><strong>Secret Zero</strong> — something must still hold the initial credential</li>
+          <li><strong>Standing access</strong> — a long-lived key is a persistent attack surface 24/7</li>
+          <li><strong>Rotation burden</strong> — managing hundreds of rotating keys across workloads is operationally expensive</li>
+          <li><strong>Blast radius</strong> — a leaked key grants standing access until manually revoked</li>
+        </ul>
+      </div>
+
+      <!-- Section 2: The Solution -->
+      <div>
+        <div class="details-section-title">The Solution</div>
+        <p style="font-size:13px;color:#1d1d21;line-height:1.7">
+          OPA Workload Identity shifts from <em>"you have a secret"</em> to <em>"you are who you say you are."</em> Workloads prove their identity using <strong>cryptographically signed JWTs</strong> issued by their native platform (GitHub Actions, GitLab CI, GCP, CircleCI). OPA validates the token against a pre-configured trust relationship.
+        </p>
+        <p style="font-size:13px;color:#1d1d21;line-height:1.7;margin-top:10px">
+          <strong>No static keys. No Secret Zero. No standing privilege.</strong>
+        </p>
+      </div>
+
+      <!-- Section 3: The Authentication Chain -->
+      <div>
+        <div class="details-section-title">The Authentication Chain</div>
+        <div class="chain-steps">
+          <div class="chain-step">
+            <div class="chain-step-num">1</div>
+            <div class="chain-step-text"><strong>GitHub Actions requests an OIDC JWT</strong> directly from GitHub's platform endpoint. No stored secret is needed — the platform signs the token based on the job's runtime context.</div>
+          </div>
+          <div class="chain-step">
+            <div class="chain-step-num">2</div>
+            <div class="chain-step-text"><strong>The workflow passes the JWT to <code>sft workload authenticate</code></strong> along with the team name and Workload Connection name. The <code>sft</code> CLI submits the JWT to OPA for validation.</div>
+          </div>
+          <div class="chain-step">
+            <div class="chain-step-num">3</div>
+            <div class="chain-step-text"><strong>OPA validates the JWT</strong> against the Workload Connection's configured JWKS URL and required claims (e.g., <code>repository</code>, <code>ref</code>, <code>workflow</code>). If any claim fails, authentication is rejected.</div>
+          </div>
+          <div class="chain-step">
+            <div class="chain-step-num">4</div>
+            <div class="chain-step-text"><strong>OPA issues a short-lived access token</strong> (TTL configured per Workload Connection). This token is non-refreshable — the workload must fully re-authenticate when it expires. No token can be revoked individually; deactivating the Workload Connection blocks all future issuance.</div>
+          </div>
+          <div class="chain-step">
+            <div class="chain-step-num">5</div>
+            <div class="chain-step-text"><strong><code>sft ssh</code> uses the OPA token</strong> to request a brokered SSH session. OPA evaluates the attached security policy and, if authorized, issues an ephemeral SSH client certificate for the target server.</div>
+          </div>
+          <div class="chain-step">
+            <div class="chain-step-num">6</div>
+            <div class="chain-step-text"><strong>A JIT account (<code>wl_github_actions</code>) is created</strong> on the target server at job start. The job executes under this account, then the account is torn down immediately on completion. No persistent accounts or SSH keys remain.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 4: Key Concepts -->
+      <div>
+        <div class="details-section-title">Key Concepts</div>
+        <div class="concept-grid">
+          <div class="concept-card">
+            <div class="concept-card-label">Workload Connection</div>
+            <div class="concept-card-text">Created in Draft by a DevOps admin; promoted to Active by a Security admin before tokens can be issued. Defined by a JWKS URL and required JWT claims. Allow ~5 minutes after activation for OPA to refresh.</div>
+          </div>
+          <div class="concept-card">
+            <div class="concept-card-label">Workload Role</div>
+            <div class="concept-card-text">Groups ephemeral workloads by shared characteristics. Acts as the principal in OPA security policies — the same policy framework used for human access. Optional JWT claim filters scope which workloads match the role.</div>
+          </div>
+          <div class="concept-card">
+            <div class="concept-card-label">wl_ Prefix</div>
+            <div class="concept-card-text">All workload Unix/Linux accounts are auto-prefixed with <code>wl_</code> (e.g., <code>wl_github_actions</code>). This prefix visually distinguishes ephemeral workload accounts from human accounts in audit logs and on the target server.</div>
+          </div>
+          <div class="concept-card">
+            <div class="concept-card-label">OPA_TOKEN</div>
+            <div class="concept-card-text">The short-lived access token exported after successful workload authentication. Used as the credential for <code>sft ssh</code>. Non-refreshable by design — expiration forces full re-attestation, ensuring fresh cryptographic proof of identity for every session.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 5: Zero Standing Privilege -->
+      <div>
+        <div class="details-section-title">Zero Standing Privilege</div>
+        <p style="font-size:13px;color:#1d1d21;line-height:1.7">
+          "No standing credentials" means there is nothing to steal between job runs:
+        </p>
+        <ul style="font-size:13px;color:#1d1d21;line-height:1.9;margin-top:10px;padding-left:20px">
+          <li>The OIDC JWT exists only during the GitHub Actions job execution window</li>
+          <li>The OPA access token is issued per-authentication and expires in 300s</li>
+          <li>The SSH certificate is ephemeral — valid only for the duration of the brokered session</li>
+          <li>The <code>wl_</code> account on the target server is created at job start and destroyed at job end</li>
+          <li>Removing a Workload Role from a security policy terminates active SSH sessions immediately</li>
+          <li>MFA and Access Requests must not be enabled on workload role policies — headless workloads cannot respond to authentication prompts</li>
+        </ul>
+      </div>
+
+      <!-- Section 6: Audit Trail -->
+      <div>
+        <div class="details-section-title">Audit Trail</div>
+        <p style="font-size:13px;color:#1d1d21;line-height:1.7">
+          Every workload authentication and SSH session generates structured events in the Okta System Log, enabling full traceability without any custom instrumentation:
+        </p>
+        <div class="concept-grid" style="margin-top:12px">
+          <div class="concept-card">
+            <div class="concept-card-label">pam.user_creds.issue</div>
+            <div class="concept-card-text">Fired when OPA issues the short-lived access token. Actor type is <strong>WorkloadPrincipal</strong>. Contains the Workload Connection name, team, and token TTL. Queryable in the Okta Admin Console or via System Log API.</div>
+          </div>
+          <div class="concept-card">
+            <div class="concept-card-label">pam.server.ssh_login</div>
+            <div class="concept-card-text">Fired on brokered SSH session establishment. Actor is the <strong><code>wl_</code> user</strong> (e.g., <code>wl_github_actions</code>). Records target host, session start time, and the security policy that authorized access.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
 
 <script>
   const STATE_URL = '/state.json';
@@ -1025,18 +1764,28 @@
     }
   }
 
-  let lastStatus = null;
+  // ── Flow node activation during deploy (Fix 3) ─────────────────
+  let lastCompletedSteps = new Set();
 
-  function showSection(id, visible) {
-    const el = document.getElementById(id);
-    if (el) el.classList.toggle('visible', visible);
+  function triggerFlowNodeForStep(name) {
+    if (name === 'Request GitHub OIDC Token') {
+      document.getElementById('flow-github').classList.add('active');
+    } else if (name === 'Authenticate with OPA Workload Identity') {
+      document.getElementById('flow-arrow-1').classList.add('active');
+      document.getElementById('flow-opa').classList.add('active');
+    } else if (name === 'Update dashboard via brokered SSH') {
+      document.getElementById('flow-arrow-2').classList.add('active');
+      document.getElementById('flow-server').classList.add('active');
+    }
   }
 
+  let lastStatus = null;
+
   const OIDC_HIGHLIGHT_KEYS = new Set([
-    'iss', 'sub', 'aud', 'repository', 'ref', 'workflow', 'workflow_ref', 'job_workflow_ref'
+    'iss', 'aud', 'ref', 'repository'
   ]);
   const OPA_HIGHLIGHT_KEYS = new Set([
-    'iss', 'sub', 'exp', 'iat', 'team', 'project', 'groups'
+    'iss', 'sub'
   ]);
 
   function escapeHTML(str) {
@@ -1059,34 +1808,78 @@
     }).join('\n');
   }
 
-  function renderState(s) {
-    // Customer name
-    document.getElementById('customer-name').textContent = fmt(s.customer, 'Demo Customer');
+  // ── Evidence flash helper (Fix 5) ──────────────────────────────
+  let prevOidcToken = null;
+  let prevOpaToken = null;
+  let prevSshHost = null;
+  let auditEventData  = null;   // cached live event — null until fetched
+  let auditPollTimer  = null;   // setTimeout handle for retry loop
+  let auditPollCount  = 0;      // guard: stop after 24 attempts (~2 min at 5s)
+  let auditAnchorSub  = null;   // actor_id being polled — detect run change
+  let sshLoginEventData  = null;
+  let sshLoginPollTimer  = null;
+  let sshLoginPollCount  = 0;
+  let sshLoginAnchorSub  = null;
 
+  function flashEvidenceCards(s) {
+    const toFlash = [];
+    if (s.oidc_token && s.oidc_token !== prevOidcToken) {
+      toFlash.push('section-oidc');
+      prevOidcToken = s.oidc_token;
+    }
+    if (s.opa_token && s.opa_token !== prevOpaToken) {
+      toFlash.push('section-opa-token');
+      prevOpaToken = s.opa_token;
+    }
+    if (s.ssh_target_host && s.ssh_target_host !== prevSshHost) {
+      toFlash.push('section-ssh');
+      toFlash.push('section-deployment');
+      toFlash.push('audit-card');
+      prevSshHost = s.ssh_target_host;
+    }
+    toFlash.forEach(sectionId => {
+      const section = document.getElementById(sectionId);
+      if (!section) return;
+      const cards = section.querySelectorAll('.evidence-card, .evidence-card-full');
+      cards.forEach(card => {
+        card.classList.add('just-loaded');
+        setTimeout(() => card.classList.remove('just-loaded'), 1500);
+      });
+    });
+  }
+
+  function renderState(s) {
     // Deployment counter — mirrors workflow run number
     const deployCount = s.workflow_run_number || 0;
     const credEl = document.getElementById('cred-count');
     credEl.textContent = deployCount;
     credEl.className = 'cred-counter' + (s.status === 'success' ? ' deployed' : '');
 
-    // Hero status
+    // Hero status — only update if not currently deploying (don't overwrite blue state)
     const statusEl = document.getElementById('deploy-status');
     const tsEl = document.getElementById('deploy-timestamp');
     const deployed = s.status === 'success';
 
-    if (deployed && s.last_deploy) {
-      statusEl.textContent = '✅ DEPLOYMENT SUCCESSFUL';
-      statusEl.className = 'hero-status-value success';
-      tsEl.textContent = 'Last deploy: ' + s.last_deploy;
-    } else {
-      statusEl.textContent = 'Awaiting Deployment…';
-      statusEl.className = 'hero-status-value awaiting';
-      tsEl.textContent = '—';
+    if (!isRunning) {
+      if (deployed && s.last_deploy) {
+        statusEl.textContent = '✅ DEPLOYMENT SUCCESSFUL';
+        statusEl.className = 'hero-status-value success';
+        tsEl.textContent = 'Last deploy: ' + s.last_deploy;
+      } else {
+        statusEl.textContent = 'Awaiting Deployment…';
+        statusEl.className = 'hero-status-value awaiting';
+        tsEl.textContent = '—';
+      }
     }
 
-    // Flow nodes — only trigger animation on state change to avoid re-firing on every poll
-    if (deployed !== lastStatus) {
-      setFlowActive(deployed);
+    // Flow nodes — only trigger staggered cascade on state change when not mid-deploy
+    // (mid-deploy flow nodes are triggered per-step in renderSteps)
+    if (deployed !== lastStatus && !isRunning) {
+      if (deployed) {
+        setFlowActive(true);
+      } else {
+        setFlowActive(false);
+      }
       lastStatus = deployed;
     }
 
@@ -1102,11 +1895,6 @@
     document.getElementById('session-duration').textContent =
       (dur !== null && dur !== undefined) ? dur + 's' : '—';
 
-    const branch = fmt(s.git_branch, '');
-    const commit = s.git_commit ? s.git_commit.slice(0, 7) : '';
-    const repo = fmt(s.git_repo, '');
-    const gitParts = [commit, branch, repo].filter(Boolean);
-    document.getElementById('git-info').textContent = gitParts.join(' · ') || '—';
 
     // Card active state
     ['card-identity', 'card-session'].forEach(id => {
@@ -1117,19 +1905,11 @@
     document.getElementById('footer-count').textContent =
       'Run #' + (s.workflow_run_number || 0);
 
-    // ── Evidence sections — only show after successful deploy ──────
-    const showEvidence = deployed;
-    showSection('section-deployment', showEvidence);
-    showSection('section-runner', showEvidence);
-    showSection('section-oidc', showEvidence);
-    showSection('section-opa-token', showEvidence);
-    showSection('section-ssh', showEvidence);
-
-    if (!showEvidence) return;
+    // ── Evidence sections — always visible, populate with — when empty ──
 
     // Deployment Details
-    const runNum = fmt(s.workflow_run_number);
-    document.getElementById('ev-run-number').textContent = 'Run #' + runNum;
+    document.getElementById('ev-run-number').textContent =
+      s.workflow_run_number ? 'Run #' + s.workflow_run_number : '—';
 
     const runId = s.workflow_run_id;
     const runIdEl = document.getElementById('ev-run-id');
@@ -1142,19 +1922,16 @@
     document.getElementById('ev-triggered-by').textContent = fmt(s.triggered_by);
     document.getElementById('ev-repo').textContent = fmt(s.git_repo);
     document.getElementById('ev-branch').textContent = fmt(s.git_branch);
-    document.getElementById('ev-commit').textContent = s.git_commit ? s.git_commit : '—';
+    document.getElementById('ev-commit').textContent = fmt(s.git_commit);
 
     // Runner
     document.getElementById('ev-runner-hostname').textContent = fmt(s.runner_hostname);
     document.getElementById('ev-runner-ip').textContent = fmt(s.runner_ip);
     document.getElementById('ev-runner-executed-at').textContent = fmt(s.runner_executed_at);
-    document.getElementById('ev-session-dur').textContent =
-      (s.session_duration_seconds !== null && s.session_duration_seconds !== undefined)
-        ? s.session_duration_seconds + 's' : '—';
 
     // OIDC Token
     document.getElementById('ev-oidc-iat').textContent = epochToHuman(s.oidc_token_iat);
-    document.getElementById('ev-oidc-nbf').textContent = epochToHuman(s.oidc_token_iat); // nbf = iat for GitHub OIDC
+    document.getElementById('ev-oidc-nbf').textContent = epochToHuman(s.oidc_token_iat);
     document.getElementById('ev-oidc-exp').textContent = epochToHuman(s.oidc_token_exp);
 
     if (s.oidc_token) {
@@ -1164,6 +1941,10 @@
         document.getElementById('oidc-header-pre').textContent = JSON.stringify(dec.header, null, 2);
         document.getElementById('oidc-payload-pre').innerHTML = renderHighlightedJSON(dec.payload, OIDC_HIGHLIGHT_KEYS);
       }
+    } else {
+      document.getElementById('oidc-full').textContent = '—';
+      document.getElementById('oidc-header-pre').textContent = '—';
+      document.getElementById('oidc-payload-pre').textContent = '—';
     }
 
     // OPA Token
@@ -1188,14 +1969,489 @@
         document.getElementById('opa-header-pre').textContent = JSON.stringify(dec.header, null, 2);
         document.getElementById('opa-payload-pre').innerHTML = renderHighlightedJSON(dec.payload, OPA_HIGHLIGHT_KEYS);
       }
+    } else {
+      document.getElementById('opa-full').textContent = '—';
+      document.getElementById('opa-header-pre').textContent = '—';
+      document.getElementById('opa-payload-pre').textContent = '—';
     }
 
     // SSH Connection
-    document.getElementById('ev-ssh-host').textContent = fmt(s.ssh_target_host, 'target-server-01');
+    document.getElementById('ev-ssh-host').textContent = fmt(s.ssh_target_host);
     document.getElementById('ev-ssh-executed-at').textContent = fmt(s.runner_executed_at);
-    document.getElementById('ev-ssh-command').textContent =
-      'sft ssh --team farley --workload-role github_actions ' + fmt(s.ssh_target_host, 'target-server-01') + '\n' +
-      '  echo "${PAYLOAD_B64}" | base64 -d | sudo tee /var/www/demo-app/state.json > /dev/null';
+    if (s.ssh_target_host) {
+      document.getElementById('ev-ssh-command').textContent =
+        'sft ssh --team farley --workload-role github_actions ' + s.ssh_target_host + '\n' +
+        '  echo "${PAYLOAD_B64}" | base64 -d | sudo tee /var/www/demo-app/state.json > /dev/null';
+    } else {
+      document.getElementById('ev-ssh-command').textContent = '—';
+    }
+
+    // ── Audit Event section ──────────────────────────────────────
+    document.getElementById('ev-audit-outcome').textContent = deployed ? 'SUCCESS' : '—';
+
+    if (deployed) {
+      let actorId = '—';
+      if (s.opa_token) {
+        const dec = decodeJWT(s.opa_token);
+        if (dec && dec.payload && dec.payload.sub) actorId = dec.payload.sub;
+      }
+
+      document.getElementById('ev-audit-actor-type').innerHTML =
+        '<span class="audit-actor-type-badge">WorkloadPrincipal</span>';
+      document.getElementById('ev-audit-actor-id').textContent = actorId;
+      document.getElementById('ev-audit-client').innerHTML =
+        '<span class="audit-client-badge">WORKLOAD</span>';
+      document.getElementById('ev-audit-team').textContent = fmt(s.opa_connection);
+      document.getElementById('ev-audit-server').innerHTML =
+        s.ssh_target_host ? '<strong>' + s.ssh_target_host + '</strong>' : '—';
+      document.getElementById('ev-audit-client-ip').textContent = fmt(s.runner_ip);
+      document.getElementById('ev-audit-published').textContent = fmt(s.runner_executed_at);
+      // Trigger live Okta syslog fetch (idempotent — guards internally)
+      if (s.opa_token && s.opa_token_iat) {
+        fetchAuditEvent(s);
+        if (s.ssh_target_host) fetchSshLoginEvent(s);
+      }
+    } else {
+      ['ev-audit-outcome', 'ev-audit-actor-type', 'ev-audit-actor-id', 'ev-audit-client',
+       'ev-audit-team', 'ev-audit-server', 'ev-audit-client-ip', 'ev-audit-published',
+       'ev-ssh-login-outcome', 'ev-ssh-login-actor-type', 'ev-ssh-login-actor-id',
+       'ev-ssh-login-host', 'ev-ssh-login-policy', 'ev-ssh-login-published']
+        .forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.textContent = '—';
+        });
+    }
+
+    // Evidence flash (Fix 5)
+    flashEvidenceCards(s);
+  }
+
+  // ── Blank state template ────────────────────────────────────────
+  const BLANK_STATE = {
+    customer: null,
+    status: 'awaiting_deployment',
+    last_deploy: null,
+    deployed_by: null,
+    session_duration_seconds: null,
+    standing_credentials_used: 0,
+    deployment_count: 0,
+    opa_connection: null,
+    git_repo: null,
+    git_branch: null,
+    git_commit: null,
+    workflow_run_id: null,
+    workflow_run_number: 0,
+    triggered_by: null,
+    runner_hostname: null,
+    runner_ip: null,
+    runner_executed_at: null,
+    oidc_token: null,
+    oidc_token_iat: null,
+    oidc_token_exp: null,
+    opa_token: null,
+    opa_token_iat: null,
+    opa_token_exp: null,
+    ssh_target_host: null,
+  };
+
+  // ── Step order (Fix 2) ──────────────────────────────────────────
+  const STEP_ORDER = [
+    'Checkout',
+    'Install OPA sft CLI',
+    'Configure sft',
+    'Request GitHub OIDC Token',
+    'Authenticate with OPA Workload Identity',
+    'Update dashboard via brokered SSH',
+    'Update session duration',
+  ];
+
+  function initSteps() {
+    renderSteps(STEP_ORDER.map(name => ({ name, status: 'queued', conclusion: null })));
+    updateStepsMeta(null);
+  }
+
+  // ── Steps meta text (Fix 6) ─────────────────────────────────────
+  function updateStepsMeta(steps) {
+    const metaEl = document.getElementById('steps-meta');
+    if (!steps) {
+      metaEl.textContent = 'Ready';
+      metaEl.className = 'steps-panel-meta';
+      return;
+    }
+    const completed = steps.filter(s => s.status === 'completed' && s.conclusion !== 'failure').length;
+    const inProgress = steps.filter(s => s.status === 'in_progress').length;
+    const total = steps.length;
+
+    if (inProgress > 0 || (completed > 0 && completed < total)) {
+      const current = completed + (inProgress > 0 ? 1 : 0);
+      metaEl.textContent = 'Step ' + current + ' of ' + total;
+      metaEl.className = 'steps-panel-meta active';
+    } else if (completed === total && total > 0) {
+      const secs = deployStartTime ? Math.floor((Date.now() - deployStartTime) / 1000) : 0;
+      const m = Math.floor(secs / 60);
+      const s = String(secs % 60).padStart(2, '0');
+      metaEl.textContent = 'Completed · ' + total + '/' + total + ' · ' + m + ':' + s;
+      metaEl.className = 'steps-panel-meta completed';
+    } else {
+      metaEl.textContent = 'Ready';
+      metaEl.className = 'steps-panel-meta';
+    }
+  }
+
+  // ── Step progress panel ─────────────────────────────────────────
+  function renderSteps(steps) {
+    const list = document.getElementById('steps-list');
+    if (!steps || steps.length === 0) { list.innerHTML = ''; return; }
+
+    list.innerHTML = steps.map(step => {
+      let iconHtml, rowClass;
+      if (step.status === 'completed') {
+        if (step.conclusion === 'failure') {
+          iconHtml = '<span class="step-icon">✗</span>';
+          rowClass = 'step-row failed';
+        } else {
+          iconHtml = '<span class="step-icon">✓</span>';
+          rowClass = 'step-row done';
+        }
+      } else if (step.status === 'in_progress') {
+        iconHtml = '<div class="step-spinner"></div>';
+        rowClass = 'step-row active';
+      } else {
+        iconHtml = '<span class="step-icon">○</span>';
+        rowClass = 'step-row';
+      }
+      return '<div class="' + rowClass + '">' + iconHtml + '<span>' + step.name + '</span></div>';
+    }).join('');
+
+    // Fix 3: trigger flow nodes for newly completed steps
+    steps.forEach(step => {
+      if (step.status === 'completed' && step.conclusion !== 'failure') {
+        if (!lastCompletedSteps.has(step.name)) {
+          lastCompletedSteps.add(step.name);
+          triggerFlowNodeForStep(step.name);
+        }
+      }
+    });
+
+    // Fix 6: update meta text
+    updateStepsMeta(steps);
+  }
+
+  async function fetchWorkflowSteps(runId) {
+    try {
+      const resp = await fetch('/api/workflow-steps?run_id=' + runId);
+      if (!resp.ok) return;
+      const data = await resp.json();
+      if (data.steps) renderSteps(data.steps);
+    } catch (e) {
+      // non-fatal — steps panel is best-effort
+    }
+  }
+
+  async function fetchAuditEvent(s) {
+    // Derive actor_id from OPA token sub claim
+    const dec = decodeJWT(s.opa_token);
+    if (!dec || !dec.payload || !dec.payload.sub) return;
+    const actorId = dec.payload.sub;
+
+    // If we already have data for this actor_id, nothing to do
+    if (auditEventData && auditAnchorSub === actorId) return;
+
+    // If a different run started, reset
+    if (auditAnchorSub && auditAnchorSub !== actorId) {
+      clearTimeout(auditPollTimer);
+      auditEventData = null;
+      auditPollCount = 0;
+    }
+    auditAnchorSub = actorId;
+
+    // Show spinner in UUID field while polling
+    const uuidEl = document.getElementById('ev-audit-uuid');
+    if (uuidEl && !auditEventData) {
+      document.getElementById('ev-audit-uuid-row').style.display = '';
+      uuidEl.innerHTML = '<div class="step-spinner" style="display:inline-block"></div>';
+    }
+
+    // Build ±90s window around opa_token_iat
+    const iat = s.opa_token_iat || 0;
+    const since = new Date((iat - 90) * 1000).toISOString();
+    const until = new Date((iat + 90) * 1000).toISOString();
+    const url = '/api/audit-event?since=' + encodeURIComponent(since)
+              + '&until=' + encodeURIComponent(until)
+              + '&actor_id=' + encodeURIComponent(actorId);
+
+    auditPollCount++;
+    try {
+      const resp = await fetch(url);
+      const data = await resp.json();
+
+      if (resp.ok && data.found) {
+        auditEventData = data;
+        renderAuditLive(data);
+        return; // success — stop polling
+      }
+    } catch (e) {
+      // non-fatal — retry
+    }
+
+    // Not found yet — retry up to 24×5s = 2 minutes
+    if (auditPollCount < 24) {
+      auditPollTimer = setTimeout(() => fetchAuditEvent(s), 5000);
+    } else {
+      // Timeout: clear spinner, leave reconstructed values in place
+      const uuidRow = document.getElementById('ev-audit-uuid-row');
+      if (uuidRow) uuidRow.style.display = 'none';
+    }
+  }
+
+  function renderAuditLive(data) {
+    // Published: prefer real Okta timestamp over runner_executed_at
+    if (data.published) {
+      document.getElementById('ev-audit-published').textContent = data.published;
+    }
+
+    // UUID (shown only when confirmed present)
+    if (data.uuid) {
+      document.getElementById('ev-audit-uuid').textContent = data.uuid;
+      document.getElementById('ev-audit-uuid-row').style.display = '';
+    }
+
+    // x509 fingerprint (shown only when confirmed present in debugContext)
+    if (data.x509_fingerprint) {
+      document.getElementById('ev-audit-x509').textContent = data.x509_fingerprint;
+      document.getElementById('ev-audit-x509-row').style.display = '';
+    }
+    // If null, the row stays hidden — no placeholder
+  }
+
+  async function fetchSshLoginEvent(s) {
+    const dec = decodeJWT(s.opa_token);
+    if (!dec || !dec.payload || !dec.payload.sub) return;
+    const actorId = dec.payload.sub;
+
+    if (sshLoginEventData && sshLoginAnchorSub === actorId) return;
+
+    if (sshLoginAnchorSub && sshLoginAnchorSub !== actorId) {
+      clearTimeout(sshLoginPollTimer);
+      sshLoginEventData = null;
+      sshLoginPollCount = 0;
+    }
+    sshLoginAnchorSub = actorId;
+
+    // Show spinner in UUID field while polling
+    const uuidEl = document.getElementById('ev-ssh-login-uuid');
+    if (uuidEl && !sshLoginEventData) {
+      document.getElementById('ev-ssh-login-uuid-row').style.display = '';
+      uuidEl.innerHTML = '<div class="step-spinner" style="display:inline-block"></div>';
+    }
+
+    // Use a wider window (±300s) since ssh_login fires after auth, not at opa_token_iat
+    const iat = s.opa_token_iat || 0;
+    const since = new Date((iat - 60) * 1000).toISOString();
+    const until = new Date((iat + 300) * 1000).toISOString();
+    const url = '/api/ssh-login-event?since=' + encodeURIComponent(since)
+              + '&until=' + encodeURIComponent(until)
+              + '&target_host=' + encodeURIComponent(s.ssh_target_host || '');
+
+    sshLoginPollCount++;
+    try {
+      const resp = await fetch(url);
+      const data = await resp.json();
+      if (resp.ok && data.found) {
+        sshLoginEventData = data;
+        renderSshLoginLive(data);
+        return;
+      }
+    } catch (e) {
+      // non-fatal — retry
+    }
+
+    if (sshLoginPollCount < 30) {
+      sshLoginPollTimer = setTimeout(() => fetchSshLoginEvent(s), 5000);
+    } else {
+      const uuidRow = document.getElementById('ev-ssh-login-uuid-row');
+      if (uuidRow) uuidRow.style.display = 'none';
+    }
+  }
+
+  function renderSshLoginLive(data) {
+    if (data.published) {
+      document.getElementById('ev-ssh-login-published').textContent = data.published;
+    }
+    if (data.outcome) {
+      document.getElementById('ev-ssh-login-outcome').textContent = data.outcome;
+    }
+    if (data.uuid) {
+      document.getElementById('ev-ssh-login-uuid').textContent = data.uuid;
+      document.getElementById('ev-ssh-login-uuid-row').style.display = '';
+    }
+    if (data.actor_id) {
+      document.getElementById('ev-ssh-login-actor-type').innerHTML =
+        '<span class="audit-actor-type-badge">WorkloadPrincipal</span>';
+      document.getElementById('ev-ssh-login-actor-id').textContent = data.actor_id;
+    }
+    if (data.target_host) {
+      document.getElementById('ev-ssh-login-host').innerHTML =
+        '<strong>' + data.target_host + '</strong>';
+    }
+    if (data.security_policy) {
+      document.getElementById('ev-ssh-login-policy').textContent = data.security_policy;
+    }
+  }
+
+  // ── Elapsed timer (Fix 4) ───────────────────────────────────────
+  let deployStartTime = null;
+  let elapsedTimer = null;
+
+  function startElapsedTimer() {
+    deployStartTime = Date.now();
+    elapsedTimer = setInterval(() => {
+      const secs = Math.floor((Date.now() - deployStartTime) / 1000);
+      const m = Math.floor(secs / 60);
+      const s = String(secs % 60).padStart(2, '0');
+      const statusEl = document.getElementById('deploy-status');
+      if (statusEl && isRunning) {
+        statusEl.textContent = 'Deployment In Progress… (' + m + ':' + s + ')';
+      }
+    }, 1000);
+  }
+
+  function stopElapsedTimer() {
+    clearInterval(elapsedTimer);
+    elapsedTimer = null;
+    // keep deployStartTime alive so completion meta can read it
+  }
+
+  // Fix 1: immediate hero deploying state
+  function renderDeployingState() {
+    const statusEl = document.getElementById('deploy-status');
+    statusEl.textContent = 'Deployment In Progress… (0:00)';
+    statusEl.className = 'hero-status-value deploying';
+    document.getElementById('deploy-timestamp').textContent = '—';
+  }
+
+  // ── Control bar state ───────────────────────────────────────────
+  let isRunning = false;
+  let workflowRunId = null;
+  let pollTimer = null;
+
+  function updateControlState() {
+    document.getElementById('run-btn').disabled   = isRunning;
+    document.getElementById('clear-btn').disabled = isRunning;
+    document.getElementById('running-indicator').style.display = isRunning ? 'flex' : 'none';
+  }
+
+  async function onRunPipeline() {
+    if (isRunning) return;
+    isRunning = true;
+    workflowRunId = null;
+    lastCompletedSteps = new Set();
+
+    // Fix 1: hero goes blue immediately
+    renderDeployingState();
+    // Fix 4: start elapsed counter
+    startElapsedTimer();
+    // Reset steps to all-queued
+    initSteps();
+    updateControlState();
+
+    try {
+      const resp = await fetch('/api/run', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ customer_name: '' }),
+      });
+      const data = await resp.json();
+      if (!resp.ok) {
+        console.error('Run error:', data.error);
+        isRunning = false;
+        stopElapsedTimer();
+        updateControlState();
+        return;
+      }
+      workflowRunId = data.run_id || null;
+      pollWorkflowStatus();
+    } catch (e) {
+      console.error('Run fetch error:', e.message);
+      isRunning = false;
+      stopElapsedTimer();
+      updateControlState();
+    }
+  }
+
+  function pollWorkflowStatus() {
+    clearTimeout(pollTimer);
+    if (!workflowRunId) {
+      // No run id yet — retry in 5s (dispatch accepted but GH hasn't queued run yet)
+      pollTimer = setTimeout(async () => {
+        pollWorkflowStatus();
+      }, 5000);
+      return;
+    }
+    pollTimer = setTimeout(async () => {
+      try {
+        const resp = await fetch('/api/workflow-status?run_id=' + workflowRunId);
+        const data = await resp.json();
+
+        // Only fetch steps once the runner has actually started (not while queued)
+        if (data.gh_status === 'in_progress') {
+          fetchWorkflowSteps(workflowRunId);
+        }
+
+        if (data.status === 'completed') {
+          isRunning = false;
+          stopElapsedTimer();
+          const completedRunId = workflowRunId;
+          workflowRunId = null;
+          updateControlState();
+          fetchState();
+          // Final step fetch to show all-green — Fix 7: steps stay visible (no hide)
+          setTimeout(async () => {
+            await fetchWorkflowSteps(completedRunId);
+          }, 500);
+        } else {
+          pollWorkflowStatus(); // still in_progress — keep polling
+        }
+      } catch (e) {
+        console.warn('Status poll error:', e.message);
+        pollWorkflowStatus();
+      }
+    }, 3000);
+  }
+
+  async function onClear() {
+    if (isRunning) return;
+    try {
+      await fetch('/api/clear', { method: 'POST' });
+    } catch (e) {
+      console.warn('Clear error:', e.message);
+    }
+    // Reset UI immediately without waiting for next poll
+    lastStatus = null;
+    lastCompletedSteps = new Set();
+    prevOidcToken = null;
+    prevOpaToken = null;
+    prevSshHost = null;
+    deployStartTime = null;
+    clearTimeout(auditPollTimer);
+    auditEventData  = null;
+    auditPollCount  = 0;
+    auditAnchorSub  = null;
+    clearTimeout(sshLoginPollTimer);
+    sshLoginEventData  = null;
+    sshLoginPollCount  = 0;
+    sshLoginAnchorSub  = null;
+    // Reset live-only fields
+    const uuidRow = document.getElementById('ev-audit-uuid-row');
+    if (uuidRow) uuidRow.style.display = 'none';
+    const x509Row = document.getElementById('ev-audit-x509-row');
+    if (x509Row) x509Row.style.display = 'none';
+    const sshUuidRow = document.getElementById('ev-ssh-login-uuid-row');
+    if (sshUuidRow) sshUuidRow.style.display = 'none';
+    setFlowActive(false);
+    initSteps();
+    const preservedCount = parseInt(document.getElementById('cred-count').textContent, 10) || 0;
+    renderState({ ...BLANK_STATE, workflow_run_number: preservedCount });
   }
 
   async function fetchState() {
@@ -1209,6 +2465,8 @@
     }
   }
 
+  // Initialize steps panel on page load (Fix 2)
+  initSteps();
   fetchState();
   setInterval(fetchState, REFRESH_MS);
 </script>

@@ -90,6 +90,7 @@ jobs:
           if ! sft workload authenticate \
             --team farley \
             --connection github-actions-prod \
+            --role-hint github_actions \
             --jwt-env GITHUB_OIDC_TOKEN > /tmp/sft_out.txt 2>/tmp/sft_err.txt; then
             echo "=== sft error ==="
             cat /tmp/sft_err.txt
