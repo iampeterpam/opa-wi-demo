@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Securing the Digital Assembly Line — Okta Privileged Access</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        display: ['"DM Serif Display"', 'serif'],
+                        body: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        slate: {
+                            950: '#0a0e1a',
+                        },
+                        okta: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            200: '#c7d2fe',
+                            400: '#818cf8',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                        },
+                        risk: {
+                            50: '#fef2f2',
+                            100: '#fee2e2',
+                            400: '#f87171',
+                            500: '#ef4444',
+                            600: '#dc2626',
+                        },
+                        warn: {
+                            400: '#fbbf24',
+                            500: '#f59e0b',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        * { font-family: 'Plus Jakarta Sans', sans-serif; }
+        h1, h2, h3, .font-display { font-family: 'DM Serif Display', serif; }
+
+        /* Grain texture overlay */
+        .grain::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Glow effects */
+        .glow-secure {
+            box-shadow: 0 0 60px rgba(99, 102, 241, 0.15), 0 0 120px rgba(99, 102, 241, 0.05);
+        }
+        .glow-risk {
+            box-shadow: 0 0 60px rgba(239, 68, 68, 0.15), 0 0 120px rgba(239, 68, 68, 0.05);
+        }
+
+        /* ─── Timeline styles ─── */
+        .timeline {
+            position: relative;
+            padding-left: 3rem;
+        }
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+        }
+        .timeline-risk::before { background: linear-gradient(to bottom, #fca5a5, #ef4444); }
+        .timeline-secure::before { background: linear-gradient(to bottom, #a5b4fc, #4f46e5); }
+
+        .timeline-step {
+            position: relative;
+            padding-bottom: 2rem;
+            opacity: 0;
+            transform: translateY(24px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        .timeline-step.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .timeline-dot {
+            position: absolute;
+            left: -3rem;
+            top: 4px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            color: white;
+            z-index: 2;
+        }
+        .timeline-risk .timeline-dot { background: #ef4444; }
+        .timeline-secure .timeline-dot { background: #4f46e5; }
+
+        .tech-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 0.75rem;
+        }
+        .tech-badge-secure {
+            background: #eef2ff;
+            border: 1px solid #c7d2fe;
+            color: #4338ca;
+        }
+        .tech-badge-risk {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+        }
+
+        @media (max-width: 768px) {
+            .timeline { padding-left: 2.5rem; }
+            .timeline-dot { left: -2.5rem; width: 28px; height: 28px; font-size: 11px; }
+        }
+
+        /* ─── Step scene animations ─── */
+        .step-scene {
+            height: 56px;
+            margin-top: 0.75rem;
+            position: relative;
+            overflow: hidden;
+            border-radius: 0.5rem;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+        }
+        .step-scene svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+        /* Particle / dot that travels along a path */
+        @keyframes travel-right {
+            0% { transform: translateX(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateX(calc(100% - 12px)); opacity: 0; }
+        }
+        @keyframes travel-right-slow {
+            0% { transform: translateX(0); opacity: 0; }
+            5% { opacity: 1; }
+            95% { opacity: 1; }
+            100% { transform: translateX(calc(100% - 12px)); opacity: 0; }
+        }
+
+        /* Dot styles */
+        .scene-dot {
+            position: absolute;
+            top: 50%;
+            left: 8px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            transform: translateY(-50%);
+            opacity: 0;
+        }
+        .timeline-step.visible .scene-dot {
+            animation: travel-right 1.8s ease-in-out 0.4s forwards;
+        }
+        .timeline-step.visible .scene-dot-repeat {
+            animation: travel-right 2.5s ease-in-out 0.4s infinite;
+        }
+        .scene-dot-red { background: #ef4444; box-shadow: 0 0 8px rgba(239,68,68,0.5); }
+        .scene-dot-blue { background: #6366f1; box-shadow: 0 0 8px rgba(99,102,241,0.5); }
+        .scene-dot-green { background: #22c55e; box-shadow: 0 0 8px rgba(34,197,94,0.5); }
+
+        /* Node icons in scenes */
+        .scene-node {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .scene-node-left { left: 12px; }
+        .scene-node-mid { left: 50%; margin-left: -18px; }
+        .scene-node-right { right: 12px; }
+
+        /* Path line */
+        .scene-path {
+            position: absolute;
+            top: 50%;
+            height: 2px;
+            transform: translateY(-50%);
+        }
+
+        /* Dissolve animation for cleanup step */
+        @keyframes dissolve-out {
+            0%, 50% { opacity: 1; transform: scale(1); filter: blur(0); }
+            80% { opacity: 0.3; transform: scale(0.9); filter: blur(1px); }
+            100% { opacity: 0; transform: scale(0.7); filter: blur(3px); }
+        }
+        .scene-dissolve {
+            opacity: 1;
+        }
+        .timeline-step.visible .scene-dissolve {
+            animation: dissolve-out 2s ease-out 0.8s forwards;
+        }
+
+        /* Dissolved labels appear after items vanish */
+        @keyframes label-fade-in {
+            0%, 80% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+        .dissolved-label {
+            opacity: 0;
+        }
+        .timeline-step.visible .dissolved-label {
+            animation: label-fade-in 2.5s ease-out 0.8s forwards;
+        }
+
+        /* Key that stays (traditional) */
+        @keyframes pulse-stay {
+            0%, 100% { box-shadow: 0 0 4px rgba(239,68,68,0.3); }
+            50% { box-shadow: 0 0 12px rgba(239,68,68,0.6); }
+        }
+        .timeline-step.visible .scene-key-persist {
+            animation: pulse-stay 1.5s ease-in-out 1.5s infinite;
+        }
+
+        /* Checkmark draw */
+        @keyframes draw-check {
+            0% { stroke-dashoffset: 20; }
+            100% { stroke-dashoffset: 0; }
+        }
+        .timeline-step.visible .scene-check path {
+            stroke-dasharray: 20;
+            stroke-dashoffset: 20;
+            animation: draw-check 0.5s ease-out 1.2s forwards;
+        }
+
+
+        /* Fade in on scroll */
+        .fade-up {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.7s ease, transform 0.7s ease;
+        }
+        .fade-up.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Staggered children */
+        .stagger > *:nth-child(1) { transition-delay: 0ms; }
+        .stagger > *:nth-child(2) { transition-delay: 120ms; }
+        .stagger > *:nth-child(3) { transition-delay: 240ms; }
+
+        /* Gradient mesh background */
+        .mesh-bg {
+            background:
+                radial-gradient(ellipse at 20% 50%, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(99, 102, 241, 0.05) 0%, transparent 40%),
+                radial-gradient(ellipse at 60% 80%, rgba(79, 70, 229, 0.04) 0%, transparent 40%);
+        }
+
+        /* Card hover */
+        .value-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .value-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Step connector line */
+        .step-connector {
+            position: absolute;
+            top: 50%;
+            left: 100%;
+            width: 80px;
+            height: 2px;
+            background: linear-gradient(90deg, #c7d2fe, #818cf8);
+        }
+        @media (max-width: 768px) {
+            .step-connector { display: none; }
+        }
+    </style>
+</head>
+<body class="bg-white text-slate-800 antialiased overflow-x-hidden">
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         HERO SECTION
+    ═══════════════════════════════════════════════════════════════════ -->
+    <section class="relative min-h-[90vh] flex items-center justify-center grain bg-slate-950 mesh-bg overflow-hidden">
+        <!-- Decorative orbs -->
+        <div class="absolute top-20 left-10 w-72 h-72 rounded-full bg-okta-600/10 blur-3xl"></div>
+        <div class="absolute bottom-20 right-10 w-96 h-96 rounded-full bg-okta-500/5 blur-3xl"></div>
+
+        <div class="relative z-10 max-w-4xl mx-auto px-6 text-center">
+            <!-- Badge -->
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-okta-500/30 bg-okta-500/10 mb-8">
+                <span class="w-2 h-2 rounded-full bg-okta-400 animate-pulse"></span>
+                <span class="text-okta-200 text-sm font-medium tracking-wide">Okta Privileged Access</span>
+            </div>
+
+            <h1 class="font-display text-5xl md:text-7xl text-white leading-tight mb-6">
+                Securing the Digital<br>
+                <span class="text-okta-400">Assembly Line</span>
+            </h1>
+
+            <p class="text-xl md:text-2xl text-slate-300 font-light max-w-2xl mx-auto mb-8 leading-relaxed">
+                See why permanent SSH keys don't belong in your automated build systems &mdash; and what replaces them.
+            </p>
+
+            <!-- ID Badge analogy card -->
+            <div class="inline-block max-w-xl mx-auto bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl px-8 py-6 text-left">
+                <div class="flex items-start gap-4">
+                    <div class="flex-shrink-0 w-10 h-10 rounded-xl bg-okta-600/20 flex items-center justify-center">
+                        <svg class="w-5 h-5 text-okta-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15A2.25 2.25 0 002.25 6.75v10.5A2.25 2.25 0 004.5 19.5zm6-10.125a1.875 1.875 0 11-3.75 0 1.875 1.875 0 013.75 0zm1.294 6.336a6.721 6.721 0 01-3.17.789 6.721 6.721 0 01-3.168-.789 3.376 3.376 0 016.338 0z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-sm font-semibold text-okta-200 uppercase tracking-wider mb-2">What is a Workload Identity?</p>
+                        <p class="text-slate-300 text-[15px] leading-relaxed">
+                            Just like employees need ID badges to enter the building, your automated build systems need secure digital badges to SSH into your servers. Workload Identity gives each automated process its own verifiable identity &mdash; no shared SSH keys required.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scroll indicator -->
+            <div class="mt-16 flex flex-col items-center gap-2">
+                <div class="w-6 h-10 rounded-full border-2 border-white/20 flex items-start justify-center p-1.5">
+                    <div class="w-1.5 h-3 rounded-full bg-white/40 animate-bounce"></div>
+                </div>
+                <span class="text-[11px] uppercase tracking-widest text-white/30 font-medium">Scroll</span>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         TIMELINE: THE TRADITIONAL WAY
+    ═══════════════════════════════════════════════════════════════════ -->
+    <section class="py-24 px-6 bg-slate-50" id="traditional">
+        <div class="max-w-3xl mx-auto">
+            <!-- Section header -->
+            <div class="text-center mb-16 fade-up">
+                <span class="inline-block px-3 py-1 rounded-full bg-risk-100 text-risk-600 text-xs font-bold uppercase tracking-wider mb-4">The Traditional Way</span>
+                <h2 class="font-display text-4xl md:text-5xl text-slate-900 mb-4">How Most Teams Deploy Today</h2>
+                <p class="text-lg text-slate-500 max-w-xl mx-auto">Each of these steps is a liability hiding in plain sight.</p>
+            </div>
+
+            <!-- Traditional Timeline -->
+            <div class="timeline timeline-risk">
+                <!-- Step 1 -->
+                <div class="timeline-step">
+                    <div class="timeline-dot">1</div>
+                    <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+                        <h4 class="font-semibold text-slate-900 mb-1">Code Pushed</h4>
+                        <p class="text-sm text-slate-500">Developer merges to main. CI/CD pipeline triggers automatically.</p>
+                    </div>
+                </div>
+                <!-- Step 2 -->
+                <div class="timeline-step">
+                    <div class="timeline-dot">2</div>
+                    <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+                        <h4 class="font-semibold text-slate-900 mb-1">Pipeline Needs Server Access</h4>
+                        <p class="text-sm text-slate-500">The job must SSH into production servers — to push configuration changes, deploy software, or run scheduled security scans. How does it authenticate?</p>
+                    </div>
+                </div>
+                <!-- Step 3 -->
+                <div class="timeline-step">
+                    <div class="timeline-dot">3</div>
+                    <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+                        <h4 class="font-semibold text-slate-900 mb-1">Static SSH Key Retrieved</h4>
+                        <p class="text-sm text-slate-500">A private key, stored as a CI/CD secret months ago, is loaded into the runner environment.</p>
+                        <!-- Animated scene: key travels from CI/CD to runner -->
+                        <div class="step-scene">
+                            <div class="scene-node scene-node-left bg-slate-100 border border-slate-200">
+                                <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" stroke-width="1.5"/><path d="M3 9h18" stroke-width="1.5"/></svg>
+                            </div>
+                            <div class="scene-path left-[60px] right-[60px] bg-red-200" style="border-top: 2px dashed #fca5a5;height:0"></div>
+                            <div class="scene-dot scene-dot-red"></div>
+                            <div class="scene-node scene-node-right bg-risk-50 border border-risk-200 scene-key-persist">
+                                <svg class="w-5 h-5 text-risk-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z"/></svg>
+                            </div>
+                        </div>
+                        <div class="tech-badge tech-badge-risk mt-3">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126z"/></svg>
+                            <span>This key never expires. It's been here since someone set it up.</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Step 4 -->
+                <div class="timeline-step">
+                    <div class="timeline-dot">4</div>
+                    <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+                        <h4 class="font-semibold text-slate-900 mb-1">Permanent Service Account</h4>
+                        <p class="text-sm text-slate-500">The key authenticates as a static user (e.g., <span class="font-mono text-xs bg-slate-100 px-1 rounded">deploy_user</span>) that lives on the server 24/7.</p>
+                        <!-- Animated scene: key connects to permanent account on server -->
+                        <div class="step-scene">
+                            <div class="scene-node scene-node-left bg-risk-50 border border-risk-200">
+                                <svg class="w-5 h-5 text-risk-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z"/></svg>
+                            </div>
+                            <div class="scene-path left-[60px] right-[60px]" style="border-top: 2px dashed #fca5a5;height:0"></div>
+                            <div class="scene-dot scene-dot-red scene-dot-repeat"></div>
+                            <div class="scene-node scene-node-right bg-risk-50 border border-risk-200 scene-key-persist">
+                                <svg class="w-5 h-5 text-risk-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0"/></svg>
+                            </div>
+                        </div>
+                        <div class="tech-badge tech-badge-risk mt-3">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126z"/></svg>
+                            <span>This account exists whether or not a deployment is running.</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Step 5 -->
+                <div class="timeline-step">
+                    <div class="timeline-dot">5</div>
+                    <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+                        <h4 class="font-semibold text-slate-900 mb-1">Deployment Runs</h4>
+                        <p class="text-sm text-slate-500">Commands execute on the server. Connection closes when the job finishes.</p>
+                    </div>
+                </div>
+                <!-- Step 6 -->
+                <div class="timeline-step">
+                    <div class="timeline-dot">6</div>
+                    <div class="bg-white rounded-xl border border-risk-200 p-5 shadow-sm border-l-4 border-l-risk-500">
+                        <h4 class="font-semibold text-risk-700 mb-1">Nothing Changes</h4>
+                        <p class="text-sm text-slate-600">The key remains in CI/CD. The service account remains on the server. Attack surface is identical before and after deployment.</p>
+                        <div class="tech-badge tech-badge-risk mt-3">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126z"/></svg>
+                            <span>If that key leaks — via a log, a backup, a compromised runner — permanent access is compromised.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         BRIDGE / TRANSITION
+    ═══════════════════════════════════════════════════════════════════ -->
+    <section class="py-16 px-6 bg-white">
+        <div class="max-w-2xl mx-auto text-center fade-up">
+            <p class="font-display text-2xl md:text-3xl text-slate-900 italic leading-relaxed">&ldquo;What if every one of those vulnerabilities simply&hellip; didn&rsquo;t exist?&rdquo;</p>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         TIMELINE: THE OKTA WAY
+    ═══════════════════════════════════════════════════════════════════ -->
+    <section class="py-24 px-6 bg-slate-50">
+        <div class="max-w-3xl mx-auto">
+            <div class="text-center mb-16 fade-up">
+                <span class="inline-block px-3 py-1 rounded-full bg-okta-100 text-okta-600 text-xs font-bold uppercase tracking-wider mb-4">The Okta Way</span>
+                <h2 class="font-display text-4xl md:text-5xl text-slate-900 mb-4">The Same Deployment, Secured</h2>
+                <p class="text-lg text-slate-500 max-w-xl mx-auto">Every vulnerability from the traditional flow — eliminated step by step.</p>
+            </div>
+
+            <div class="timeline timeline-secure">
+                <!-- Step 1 -->
+                <div class="timeline-step">
+                    <div class="timeline-dot">1</div>
+                    <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+                        <h4 class="font-semibold text-slate-900 mb-1">Code Pushed</h4>
+                        <p class="text-sm text-slate-500">Same starting point. Developer merges to main, CI/CD pipeline triggers.</p>
+                    </div>
+                </div>
+                <!-- Step 2 -->
+                <div class="timeline-step">
+                    <div class="timeline-dot">2</div>
+                    <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+                        <h4 class="font-semibold text-slate-900 mb-1">Pipeline Requests Identity</h4>
+                        <p class="text-sm text-slate-500">Instead of looking up a stored key, the runner requests a signed OIDC token from its platform's built-in identity provider — no secrets involved.</p>
+                        <!-- Scene: JWT token travels from platform to pipeline -->
+                        <div class="step-scene">
+                            <div class="scene-node scene-node-left bg-slate-800 border border-slate-700">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5.25 14.25h13.5m-13.5 0a3 3 0 01-3-3m3 3a3 3 0 100 6h13.5a3 3 0 100-6m-16.5-3a3 3 0 013-3h13.5a3 3 0 013 3m-19.5 0a4.5 4.5 0 01.9-2.7L5.737 5.1a3.375 3.375 0 012.7-1.35h7.126c1.062 0 2.062.5 2.7 1.35l2.587 3.45a4.5 4.5 0 01.9 2.7"/></svg>
+                            </div>
+                            <div class="scene-path left-[60px] right-[60px]" style="border-top: 2px dashed #a5b4fc;height:0"></div>
+                            <div class="scene-dot scene-dot-blue"></div>
+                            <div class="scene-node scene-node-right bg-okta-50 border border-okta-200">
+                                <svg class="w-5 h-5 text-okta-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" stroke-width="1.5"/><path d="M3 9h18" stroke-width="1.5"/></svg>
+                            </div>
+                        </div>
+                        <div class="tech-badge tech-badge-secure mt-3">
+                            <span class="font-mono text-[11px]">OIDC JWT</span>
+                            <span class="font-normal text-slate-600">&mdash; Cryptographic proof of identity. No stored secrets needed.</span>
+                        </div>
+                        <p class="text-[11px] text-slate-400 mt-2">Supported: GitHub Actions, GitLab, CircleCI, Azure, GCP, Kubernetes, or any Generic JWT provider</p>
+                    </div>
+                </div>
+                <!-- Step 3 -->
+                <div class="timeline-step">
+                    <div class="timeline-dot">3</div>
+                    <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+                        <h4 class="font-semibold text-slate-900 mb-1">OPA Validates Identity</h4>
+                        <p class="text-sm text-slate-500">OPA checks the JWT signature against the platform's public keys (JWKS) and verifies claims: repository, branch, workflow, and commit.</p>
+                        <div class="tech-badge tech-badge-secure mt-3">
+                            <span class="font-mono text-[11px]">JWT Validation</span>
+                            <span class="font-normal text-slate-600">&mdash; Trust established mathematically, not by sharing secrets.</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Step 4 -->
+                <div class="timeline-step">
+                    <div class="timeline-dot">4</div>
+                    <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+                        <h4 class="font-semibold text-slate-900 mb-1">Ephemeral Access Token Issued</h4>
+                        <p class="text-sm text-slate-500">OPA issues a short-lived access token to the verified workload. This token cannot be renewed or extended.</p>
+                        <div class="tech-badge tech-badge-secure mt-3">
+                            <span class="font-mono text-[11px]">Ephemeral Token</span>
+                            <span class="font-normal text-slate-600">&mdash; Expires in minutes. Cannot be refreshed. Must re-authenticate from scratch.</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Step 5 -->
+                <div class="timeline-step">
+                    <div class="timeline-dot">5</div>
+                    <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+                        <h4 class="font-semibold text-slate-900 mb-1">x509 SSH Certificate Issued</h4>
+                        <p class="text-sm text-slate-500">OPA generates a one-time SSH client certificate for this session. No private key is stored on either side.</p>
+                        <!-- Scene: certificate travels from OPA to target -->
+                        <div class="step-scene">
+                            <div class="scene-node scene-node-left bg-okta-100 border border-okta-200">
+                                <svg class="w-5 h-5 text-okta-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
+                            </div>
+                            <div class="scene-path left-[60px] right-[60px]" style="border-top: 2px dashed #a5b4fc;height:0"></div>
+                            <div class="scene-dot scene-dot-blue"></div>
+                            <div class="scene-node scene-node-right bg-okta-50 border border-okta-200 scene-check">
+                                <svg class="w-5 h-5 text-okta-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.5 12.75l6 6 9-13.5"/></svg>
+                            </div>
+                        </div>
+                        <div class="tech-badge tech-badge-secure mt-3">
+                            <span class="font-mono text-[11px]">x509 Certificate</span>
+                            <span class="font-normal text-slate-600">&mdash; Cryptographic SSH authentication without permanent keys anywhere.</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Step 6 -->
+                <div class="timeline-step">
+                    <div class="timeline-dot">6</div>
+                    <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+                        <h4 class="font-semibold text-slate-900 mb-1">JIT Account Created</h4>
+                        <p class="text-sm text-slate-500">A temporary <span class="font-mono text-xs bg-okta-50 px-1 rounded text-okta-700">wl_</span> prefixed Unix account is created on the target server for this session only — with dynamically-scoped sudo privileges written specifically for this job, not blanket root access.</p>
+                        <div class="tech-badge tech-badge-secure mt-3">
+                            <span class="font-mono text-[11px]">JIT Account</span>
+                            <span class="font-normal text-slate-600">&mdash; Account AND its sudo permissions didn't exist 1 second ago. Won't exist 1 minute from now.</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Step 7 -->
+                <div class="timeline-step">
+                    <div class="timeline-dot">7</div>
+                    <div class="bg-white rounded-xl border border-okta-200 p-5 shadow-sm border-l-4 border-l-okta-500">
+                        <h4 class="font-semibold text-okta-700 mb-1">Deployment Runs &amp; Cleanup</h4>
+                        <p class="text-sm text-slate-600">Commands execute under the JIT account. Session ends &rarr; certificate expires, account is destroyed.</p>
+                        <!-- Scene: three labeled items dissolve, then checkmark + destroyed labels appear -->
+                        <div class="mt-3 grid grid-cols-3 gap-2">
+                            <!-- Token -->
+                            <div class="relative text-center" style="min-height: 68px;">
+                                <div class="scene-dissolve inline-flex flex-col items-center gap-1 p-2 rounded-lg bg-okta-50 border border-okta-200">
+                                    <svg class="w-5 h-5 text-okta-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z"/></svg>
+                                    <span class="text-[9px] font-semibold text-okta-700 uppercase">Token</span>
+                                </div>
+                                <div class="dissolved-label absolute inset-0 flex flex-col items-center justify-center gap-0.5">
+                                    <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4.5 12.75l6 6 9-13.5"/></svg>
+                                    <span class="text-[9px] font-bold text-green-600 uppercase">Token</span>
+                                    <span class="text-[8px] text-green-500">Destroyed</span>
+                                </div>
+                            </div>
+                            <!-- Certificate -->
+                            <div class="relative text-center" style="min-height: 68px;">
+                                <div class="scene-dissolve inline-flex flex-col items-center gap-1 p-2 rounded-lg bg-okta-50 border border-okta-200" style="animation-delay: 0.3s;">
+                                    <svg class="w-5 h-5 text-okta-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+                                    <span class="text-[9px] font-semibold text-okta-700 uppercase">Certificate</span>
+                                </div>
+                                <div class="dissolved-label absolute inset-0 flex flex-col items-center justify-center gap-0.5">
+                                    <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4.5 12.75l6 6 9-13.5"/></svg>
+                                    <span class="text-[9px] font-bold text-green-600 uppercase">Certificate</span>
+                                    <span class="text-[8px] text-green-500">Destroyed</span>
+                                </div>
+                            </div>
+                            <!-- Account -->
+                            <div class="relative text-center" style="min-height: 68px;">
+                                <div class="scene-dissolve inline-flex flex-col items-center gap-1 p-2 rounded-lg bg-okta-50 border border-okta-200" style="animation-delay: 0.6s;">
+                                    <svg class="w-5 h-5 text-okta-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0"/></svg>
+                                    <span class="text-[9px] font-semibold text-okta-700 uppercase">wl_ Account</span>
+                                </div>
+                                <div class="dissolved-label absolute inset-0 flex flex-col items-center justify-center gap-0.5">
+                                    <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4.5 12.75l6 6 9-13.5"/></svg>
+                                    <span class="text-[9px] font-bold text-green-600 uppercase">Account</span>
+                                    <span class="text-[8px] text-green-500">Destroyed</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tech-badge tech-badge-secure mt-3">
+                            <span class="font-mono text-[11px]">Zero Residue</span>
+                            <span class="font-normal text-slate-600">&mdash; No key, no account, no certificate remains. Attack surface returns to zero.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         PARADIGM SHIFT CALLOUT
+    ═══════════════════════════════════════════════════════════════════ -->
+    <section class="py-16 px-6 bg-slate-900 relative overflow-hidden">
+        <div class="absolute inset-0 opacity-20">
+            <div class="absolute top-0 left-1/4 w-96 h-96 rounded-full bg-okta-600/20 blur-3xl"></div>
+            <div class="absolute bottom-0 right-1/4 w-72 h-72 rounded-full bg-okta-500/10 blur-3xl"></div>
+        </div>
+        <div class="relative z-10 max-w-3xl mx-auto text-center fade-up">
+            <p class="text-okta-400 text-sm font-semibold uppercase tracking-wider mb-4">The Fundamental Shift</p>
+            <p class="font-display text-2xl md:text-3xl text-white leading-relaxed">
+                Traditional security asks <em class="text-risk-400">&ldquo;do you have the right secret?&rdquo;</em><br class="hidden md:block">
+                OPA asks <em class="text-okta-400">&ldquo;are you cryptographically who you say you are?&rdquo;</em>
+            </p>
+            <p class="mt-6 text-slate-400 text-[15px] max-w-xl mx-auto">No secrets to steal. No passwords to leak. Identity proven mathematically through federated OIDC — the same standard that powers &ldquo;Sign in with Google.&rdquo;</p>
+            <p class="mt-4 text-slate-500 text-xs uppercase tracking-wider">Starting with SSH machine-to-machine access. Expanding to secrets retrieval and managed passwords.</p>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         APEX FRAMEWORK FOR WORKLOAD IDENTITIES
+    ═══════════════════════════════════════════════════════════════════ -->
+    <section class="py-24 px-6 bg-white relative overflow-hidden">
+        <div class="relative z-10 max-w-4xl mx-auto">
+            <!-- Header -->
+            <div class="mb-14 fade-up">
+                <h2 class="font-display text-3xl md:text-4xl text-slate-900 mb-2">APEX Framework for Workload Identities</h2>
+                <p class="text-red-500 text-xs font-bold uppercase tracking-widest">Internal Only</p>
+            </div>
+
+            <!-- Value Drivers -->
+            <div class="mb-14 fade-up">
+                <h3 class="text-xs font-bold uppercase tracking-widest text-okta-600 mb-5">Value Drivers</h3>
+                <div class="grid md:grid-cols-2 gap-4">
+                    <p class="text-[15px] text-slate-700 leading-relaxed pl-4 border-l-2 border-okta-500">Reduce breach risk from compromised CI/CD credentials</p>
+                    <p class="text-[15px] text-slate-700 leading-relaxed pl-4 border-l-2 border-okta-500">Eliminate credential management overhead &mdash; key rotation, secret sprawl</p>
+                    <p class="text-[15px] text-slate-700 leading-relaxed pl-4 border-l-2 border-okta-500">Compliance-ready audit trails without custom tooling</p>
+                    <p class="text-[15px] text-slate-700 leading-relaxed pl-4 border-l-2 border-okta-500">Accelerate deployment velocity by removing security bottlenecks</p>
+                </div>
+            </div>
+
+            <!-- Before / After -->
+            <div class="grid md:grid-cols-2 gap-10 mb-14 fade-up">
+                <div>
+                    <h3 class="text-xs font-bold uppercase tracking-widest text-risk-600 mb-5">Before Scenario &amp; Negative Consequences</h3>
+                    <div class="space-y-4">
+                        <p class="text-[15px] text-slate-600 leading-relaxed">Static SSH keys in CI/CD &mdash; never rotated, never expire</p>
+                        <p class="text-[15px] text-slate-600 leading-relaxed">Permanent service accounts on production servers &mdash; always exploitable</p>
+                        <p class="text-[15px] text-slate-600 leading-relaxed">Compromised runner = permanent production access</p>
+                        <p class="text-[15px] text-slate-600 leading-relaxed">No audit trail connecting builds to server access</p>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-xs font-bold uppercase tracking-widest text-green-600 mb-5">After Scenario &amp; Positive Outcomes</h3>
+                    <div class="space-y-4">
+                        <p class="text-[15px] text-slate-600 leading-relaxed">Zero stored credentials &mdash; nothing to leak in a pipeline breach</p>
+                        <p class="text-[15px] text-slate-600 leading-relaxed">JIT accounts exist only during deployment &mdash; zero persistent attack surface</p>
+                        <p class="text-[15px] text-slate-600 leading-relaxed">Compromised runner yields nothing &mdash; tokens already expired</p>
+                        <p class="text-[15px] text-slate-600 leading-relaxed">Full visibility via structured Okta System Log events</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Differentiators -->
+            <div class="mb-14 fade-up">
+                <h3 class="text-xs font-bold uppercase tracking-widest text-okta-600 mb-5">Differentiators &mdash; How We Do It Better</h3>
+                <div class="space-y-4">
+                    <p class="text-[15px] text-slate-700 leading-relaxed pl-4 border-l-2 border-okta-400">Only solution that creates AND destroys local Unix accounts per-session (true JIT)</p>
+                    <p class="text-[15px] text-slate-700 leading-relaxed pl-4 border-l-2 border-okta-400">Non-refreshable tokens &mdash; stolen credentials cannot be extended</p>
+                    <p class="text-[15px] text-slate-700 leading-relaxed pl-4 border-l-2 border-okta-400">Built-in governance model (Draft &rarr; Active promotion by separate admin)</p>
+                    <p class="text-[15px] text-slate-700 leading-relaxed pl-4 border-l-2 border-okta-400">Works with GitHub Actions, GitLab, CircleCI, Azure, GCP, Kubernetes &mdash; any JWT-capable platform</p>
+                    <p class="text-[15px] text-slate-700 leading-relaxed pl-4 border-l-2 border-okta-400">Deepest sudo control in market &mdash; host agent dynamically writes session-specific sudoers per-user. Not group-based, not pre-provisioned. Competitors rely on static group sudo.</p>
+                </div>
+            </div>
+
+            <!-- Discovery & Trap Setting Questions -->
+            <div class="grid md:grid-cols-2 gap-10 fade-up">
+                <div>
+                    <h3 class="text-xs font-bold uppercase tracking-widest text-slate-500 mb-5">Trap Setting Questions</h3>
+                    <div class="space-y-4">
+                        <p class="text-[15px] text-slate-600 leading-relaxed italic">&ldquo;How do your automated systems authenticate to production servers today?&rdquo;</p>
+                        <p class="text-[15px] text-slate-600 leading-relaxed italic">&ldquo;When was the last time your CI/CD SSH keys were rotated?&rdquo;</p>
+                        <p class="text-[15px] text-slate-600 leading-relaxed italic">&ldquo;If a runner was compromised right now, how long would an attacker have access?&rdquo;</p>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-xs font-bold uppercase tracking-widest text-slate-500 mb-5">Discovery Questions</h3>
+                    <div class="space-y-4">
+                        <p class="text-[15px] text-slate-600 leading-relaxed italic">&ldquo;What's your current process for rotating CI/CD credentials?&rdquo;</p>
+                        <p class="text-[15px] text-slate-600 leading-relaxed italic">&ldquo;How does your security team audit which automation accesses which servers?&rdquo;</p>
+                        <p class="text-[15px] text-slate-600 leading-relaxed italic">&ldquo;What compliance frameworks require you to demonstrate M2M access controls?&rdquo;</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         EXECUTIVE VALUE SUMMARY
+    ═══════════════════════════════════════════════════════════════════ -->
+    <section class="py-24 px-6 bg-slate-950 relative grain overflow-hidden">
+        <!-- Decorative -->
+        <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-okta-500/40 to-transparent"></div>
+        <div class="absolute top-1/3 right-0 w-80 h-80 rounded-full bg-okta-600/5 blur-3xl"></div>
+        <div class="absolute bottom-1/3 left-0 w-80 h-80 rounded-full bg-okta-600/5 blur-3xl"></div>
+
+        <div class="relative z-10 max-w-5xl mx-auto">
+            <div class="text-center mb-16 fade-up">
+                <p class="text-sm font-semibold text-okta-400 uppercase tracking-wider mb-3">The Bottom Line</p>
+                <h2 class="font-display text-4xl md:text-5xl text-white mb-4">Business Impact</h2>
+                <p class="text-lg text-slate-400 max-w-lg mx-auto">Beyond security — real, measurable value for your organization.</p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8 stagger fade-up">
+                <!-- Card 1 -->
+                <div class="value-card bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-8 text-center">
+                    <div class="w-16 h-16 mx-auto mb-5 rounded-2xl bg-risk-500/10 border border-risk-500/20 flex items-center justify-center">
+                        <svg class="w-8 h-8 text-risk-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v3.75m0-10.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.75c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.75h-.152c-3.196 0-6.1-1.249-8.25-3.286zm0 13.036h.008v.008H12v-.008z"/>
+                        </svg>
+                    </div>
+                    <h3 class="font-display text-2xl text-white mb-3">Reduce Risk</h3>
+                    <p class="text-slate-400 text-[15px] leading-relaxed">Eliminates <strong class="text-white">permanent SSH keys and service accounts</strong>. Between deployments, there is literally no account on the server to compromise.</p>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="value-card bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-8 text-center">
+                    <div class="w-16 h-16 mx-auto mb-5 rounded-2xl bg-okta-500/10 border border-okta-500/20 flex items-center justify-center">
+                        <svg class="w-8 h-8 text-okta-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/>
+                        </svg>
+                    </div>
+                    <h3 class="font-display text-2xl text-white mb-3">Operational Speed</h3>
+                    <p class="text-slate-400 text-[15px] leading-relaxed">Teams deploy faster because SSH access is granted automatically. <strong class="text-white">No tickets, no key rotation</strong>, no manual server configuration.</p>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="value-card bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-8 text-center">
+                    <div class="w-16 h-16 mx-auto mb-5 rounded-2xl bg-green-500/10 border border-green-500/20 flex items-center justify-center">
+                        <svg class="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.745 3.745 0 011.043 3.296A3.745 3.745 0 0121 12z"/>
+                        </svg>
+                    </div>
+                    <h3 class="font-display text-2xl text-white mb-3">Audit Ready</h3>
+                    <p class="text-slate-400 text-[15px] leading-relaxed">Pass compliance checks with <strong class="text-white">structured Okta System Log events</strong> — token issuance, SSH connections, session durations — all searchable from a single pane of glass.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-8 px-6 bg-slate-950 border-t border-white/5">
+        <div class="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-2">
+                <svg class="w-5 h-5 text-okta-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/>
+                </svg>
+                <span class="text-sm text-slate-400 font-medium">Okta Privileged Access — Workload Identity</span>
+            </div>
+            <p class="text-xs text-slate-600">Presentation Demo &middot; Confidential</p>
+        </div>
+    </footer>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         JAVASCRIPT
+    ═══════════════════════════════════════════════════════════════════ -->
+    <script>
+        // Scroll-triggered animations for fade-up elements AND timeline steps
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, {
+            threshold: 0.15,
+            rootMargin: '0px 0px -50px 0px'
+        });
+
+        document.querySelectorAll('.fade-up, .timeline-step').forEach(el => observer.observe(el));
+
+    </script>
+</body>
+</html>
